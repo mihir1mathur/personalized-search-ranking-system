@@ -1,0 +1,195 @@
+
+======================================================================
+WEEK 0: DATASET VERIFICATION + BEGINNER UNDERSTANDING
+======================================================================
+Goal: verify, understand, join, sample, and document the ESCI dataset.
+(No BM25, FAISS, transformers, or model training in Week 0.)
+
+Loading datasets... (the products file is large, please be patient)
+
+======================================================================
+DATASET: examples (query -> product judgments)
+======================================================================
+Shape (rows, columns): (2621288, 9)
+
+Column names:
+  - example_id
+  - query
+  - query_id
+  - product_id
+  - product_locale
+  - esci_label
+  - small_version
+  - large_version
+  - split
+
+First 5 rows:
+   example_id           query  query_id  product_id product_locale esci_label  small_version  large_version  split
+0           0   revent 80 cfm         0  B000MOO21W             us          I              0              1  train
+1           1   revent 80 cfm         0  B07X3Y6B1V             us          E              0              1  train
+2           2   revent 80 cfm         0  B07WDM7MQQ             us          E              0              1  train
+3           3   revent 80 cfm         0  B07RH6Z8KW             us          E              0              1  train
+4           4   revent 80 cfm         0  B07QJ7WYFQ             us          E              0              1  train
+
+Missing value counts per column:
+example_id        0
+query             0
+query_id          0
+product_id        0
+product_locale    0
+esci_label        0
+small_version     0
+large_version     0
+split             0
+
+======================================================================
+DATASET: products (product catalog/details)
+======================================================================
+Shape (rows, columns): (1814924, 7)
+
+Column names:
+  - product_id
+  - product_title
+  - product_description
+  - product_bullet_point
+  - product_brand
+  - product_color
+  - product_locale
+
+First 5 rows:
+   product_id                                                       product_title                                                                                                                                                                                                                                                      product_description                                                                                                                                                  product_bullet_point product_brand product_color product_locale
+0  B079VKKJN7                11 Degrees de los Hombres Playera con Logo, Negro, L                                                                 Esta playera con el logo de la marca Carrier de 11 Degrees viene en negro, con el logo de la marca en el pecho y un pequeño texto en la parte posterior. La camiseta tiene cuello redondo y manga corta.      11 Degrees Negro Playera con logo\nA estrenar y genuina. Somos un vendedor autorizado de 11 Degrees.\nVer descripción del producto para obtener más información.    11 Degrees         Negro             es
+1  B079Y9VRKS                           Camiseta Eleven Degrees Core TS White (M)                                                                                                                                                                                                                                                                      NaN                                                                                                                                                                   NaN    11 Degrees        Blanco             es
+2  B07DP4LM9H            11 Degrees de los Hombres Core Pull Over Hoodie, Azul, S  La sudadera con capucha Core Pull Over de 11 Grados viene en color azul marino, con una capucha ajustable con cordones. Con un bolsillo en la parte delantera, esta sudadera con capucha para hombre tiene un logotipo de goma en la parte delantera y ojales de marca.  11 Degrees Azul Core Pull Over Hoodie\nA estrenar y genuina. Somos un vendedor autorizado de 11 Degrees.\nVer descripción del producto para obtener más información.    11 Degrees          Azul             es
+3  B07G37B9HP                           11 Degrees Poli Panel Track Pant XL Black                                                                                                                                                                                                                                                                      NaN                                                                                                                                                                   NaN    11 Degrees           NaN             es
+4  B07LCTGDHY  11 Degrees Gorra Trucker Negro OSFA (Talla única para Todos sexos)                                                                                                                                                                                                                                                                      NaN                                                                                                                                                                   NaN    11 Degrees       Negro (             es
+
+Missing value counts per column:
+product_id                   0
+product_title                0
+product_description     877799
+product_bullet_point    304116
+product_brand           142756
+product_color           691001
+product_locale               0
+
+======================================================================
+DATASET: sources (where each query came from)
+======================================================================
+Shape (rows, columns): (130652, 2)
+
+Column names:
+  - query_id
+  - source
+
+First 5 rows:
+   query_id      source
+0         0       other
+1         1   negations
+2         2   negations
+3         3   negations
+4         4  behavioral
+
+Missing value counts per column:
+query_id    0
+source      0
+
+======================================================================
+ESCI LABEL DISTRIBUTION (in the examples table)
+======================================================================
+esci_label
+E    1708158
+S     574313
+I     263165
+C      75652
+
+======================================================================
+UNIQUE COUNTS
+======================================================================
+Number of unique queries: 130193
+Number of unique products (in products table): 1802772
+
+======================================================================
+JOIN KEY CHECK
+======================================================================
+'product_id' in examples table? True
+'product_id' in products table? True
+
+======================================================================
+FILTERING TO US / ENGLISH (if possible)
+======================================================================
+Kept US/English example rows: 1,818,825 (was 2,621,288)
+
+======================================================================
+CONVERTING ESCI LABELS TO NUMERIC RELEVANCE SCORES
+======================================================================
+Mapping used: E=3 (Exact), S=2 (Substitute), C=1 (Complement), I=0 (Irrelevant)
+Score distribution after mapping:
+relevance_score
+0     161905
+1      40049
+2     369313
+3    1247558
+
+======================================================================
+REMOVING ROWS WITH MISSING ESSENTIAL FIELDS (pre-join)
+======================================================================
+Checking these essential columns for missing values: ['query', 'product_id', 'esci_label']
+Rows after removing missing essentials: 1,818,825 (was 1,818,825)
+
+======================================================================
+CREATING A BALANCED SAMPLE (UP TO 50,000 ROWS)
+======================================================================
+Relevance levels present: [np.int64(0), np.int64(1), np.int64(2), np.int64(3)]
+Aiming for about 12,500 rows per relevance level.
+  Relevance 0: available 161,905, taking 12,500
+  Relevance 1: available 40,049, taking 12,500
+  Relevance 2: available 369,313, taking 12,500
+  Relevance 3: available 1,247,558, taking 12,500
+Sampled example rows (before join): 50,000
+
+======================================================================
+JOINING SAMPLED EXAMPLES WITH PRODUCTS
+======================================================================
+Joining on key(s): ['product_locale', 'product_id']
+Rows after join: 50,000
+Columns after join: ['example_id', 'query', 'query_id', 'product_id', 'product_locale', 'esci_label', 'small_version', 'large_version', 'split', 'relevance_score', 'product_title', 'product_description', 'product_bullet_point', 'product_brand', 'product_color']
+
+======================================================================
+BUILDING THE 'product_text' COLUMN
+======================================================================
+Columns combined into product_text: ['product_title', 'product_description', 'product_bullet_point', 'product_brand', 'product_color']
+Created 'product_text'. Example (first row, trimmed to 200 chars):
+  New Serra-125k Serrapeptase Enzyme 125,000 SPU Per Capsule - 90 High Potency Delayed Release Caps, Up to 6X More Potent Than Other Serrapaptase - Extra Strength Non-GMO, Gluten Free, Vegan <p> Serra-1
+
+======================================================================
+REMOVING ROWS WITH MISSING product_text
+======================================================================
+Final rows after removing missing product_text: 50,000 (was 50,000)
+Final sample size: 50,000 rows
+Final sample relevance distribution:
+relevance_score
+0    12500
+1    12500
+2    12500
+3    12500
+
+======================================================================
+QUERY LENGTH ANALYSIS
+======================================================================
+Average query length (words): 3.72
+Minimum query length (words): 1
+Maximum query length (words): 29
+
+Query length distribution:
+  1-2 words : 24.70%
+  3-5 words : 63.04%
+  6+  words : 12.26%
+
+======================================================================
+SAVING OUTPUTS
+======================================================================
+Saved cleaned sample to: D:\Personalized Search Ranking System\data\processed\sample_esci_50k.parquet
+Saved 100-row example CSV to: D:\Personalized Search Ranking System\results\sample_esci_100.csv
+
+Week 0 Dataset Verification completed successfully.

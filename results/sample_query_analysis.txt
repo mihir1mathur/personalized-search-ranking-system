@@ -1,0 +1,176 @@
+================================================================
+WEEK 1: SAMPLE QUERY ANALYSIS (10 random queries)
+================================================================
+For each query we show the Top-5 products from each method.
+'rel' is the known relevance_score (3=best ... 0=irrelevant;
+ a product with no judgment for this query shows rel=0).
+
+----------------------------------------------------------------
+QUERY: apple phone charger cord and plug
+Known judged products: B014LFT8H0(rel=1), B01F9RGSFE(rel=1), B07VX8VF2L(rel=1)
+
+  Top-5 TF-IDF:
+    1. B087FRRN8Y  score=0.417  rel=0
+    2. B083J9SL6T  score=0.264  rel=0
+    3. B07X1C1QRJ  score=0.251  rel=0
+    4. B0009TCDZ2  score=0.215  rel=0
+    5. B079PT75R8  score=0.207  rel=0
+  Top-5 BM25:
+    1. B07MQ8WWF6  score=27.423  rel=0
+    2. B082X6Q8T7  score=25.943  rel=0
+    3. B082X6N8PD  score=25.757  rel=0
+    4. B07T4MC66M  score=25.733  rel=0
+    5. B077CZM19N  score=24.164  rel=0
+
+----------------------------------------------------------------
+QUERY: apple watch series 4 stainless steel
+Known judged products: B07JQHJPR9(rel=1), B07WSNJJ6N(rel=1), B0825GYP86(rel=1)
+
+  Top-5 TF-IDF:
+    1. B071K8NQYB  score=0.720  rel=0
+    2. B083DDJ64K  score=0.640  rel=0
+    3. B07MQRVYNB  score=0.612  rel=0
+    4. B077NS9C3G  score=0.611  rel=0
+    5. B07MQTMND8  score=0.607  rel=0
+  Top-5 BM25:
+    1. B07WSNJJ6N  score=34.379  rel=1
+    2. B07BHH8MR7  score=33.642  rel=0
+    3. B07ZDF496G  score=33.011  rel=0
+    4. B07T6HB1PD  score=32.622  rel=0
+    5. B07QSDHJ6W  score=31.501  rel=0
+
+----------------------------------------------------------------
+QUERY: arlo pro 2 camera
+Known judged products: B07QX22DHQ(rel=3)
+
+  Top-5 TF-IDF:
+    1. B07KCD2MYZ  score=0.589  rel=0
+    2. B079YDZ3QJ  score=0.493  rel=0
+    3. B01LR8PG52  score=0.473  rel=0
+    4. B07MDVFF4P  score=0.436  rel=0
+    5. B08D7WZL4C  score=0.295  rel=0
+  Top-5 BM25:
+    1. B01LR8PG52  score=29.698  rel=0
+    2. B07MDVFF4P  score=25.251  rel=0
+    3. B07KCD2MYZ  score=25.232  rel=0
+    4. B07QX22DHQ  score=24.666  rel=3
+    5. B079YDZ3QJ  score=21.659  rel=0
+
+----------------------------------------------------------------
+QUERY: campbell hausfeld stick
+Known judged products: B010CA4UIK(rel=1), B07RD8JKC7(rel=1), B01M1EYGUW(rel=1), B00DDWXD8S(rel=1), B00B1VUY3U(rel=0)
+
+  Top-5 TF-IDF:
+    1. B010CA4UIK  score=0.748  rel=1
+    2. B00DDWXD8S  score=0.699  rel=1
+    3. B01M1EYGUW  score=0.651  rel=1
+    4. B00B1VUY3U  score=0.598  rel=0
+    5. B008JA7PD8  score=0.423  rel=0
+  Top-5 BM25:
+    1. B010CA4UIK  score=38.667  rel=1
+    2. B01M1EYGUW  score=38.560  rel=1
+    3. B00DDWXD8S  score=38.186  rel=1
+    4. B00B1VUY3U  score=36.521  rel=0
+    5. B07RD8JKC7  score=29.128  rel=1
+
+----------------------------------------------------------------
+QUERY: holiday pjs
+Known judged products: B07NSPNCCS(rel=2)
+
+  Top-5 TF-IDF:
+    1. B074XHCTVC  score=0.297  rel=0
+    2. B076VMC1HT  score=0.296  rel=0
+    3. B08932YG81  score=0.273  rel=0
+    4. B086XJKNQW  score=0.258  rel=0
+    5. B06XTR9DMK  score=0.229  rel=0
+  Top-5 BM25:
+    1. B086XJKNQW  score=12.522  rel=0
+    2. B01NCL1X7I  score=12.487  rel=0
+    3. B06XTR9DMK  score=12.268  rel=0
+    4. B015IXRH04  score=12.252  rel=0
+    5. B08932YG81  score=12.130  rel=0
+
+----------------------------------------------------------------
+QUERY: horror bedding sets queen
+Known judged products: B07ZGG597L(rel=3)
+
+  Top-5 TF-IDF:
+    1. B089K97L3C  score=0.302  rel=0
+    2. B07X43NKP6  score=0.273  rel=0
+    3. B07481NDKZ  score=0.266  rel=0
+    4. B07YDLNGC7  score=0.257  rel=0
+    5. B085RQRS6R  score=0.239  rel=0
+  Top-5 BM25:
+    1. B089K97L3C  score=25.521  rel=0
+    2. B07R4659ZY  score=22.527  rel=0
+    3. B074TFZF6V  score=21.475  rel=0
+    4. B07YDLNGC7  score=20.635  rel=0
+    5. B081GXYS6P  score=20.318  rel=0
+
+----------------------------------------------------------------
+QUERY: oxyshred fat burner
+Known judged products: B01BXLYEQ0(rel=2), B073ZN82J3(rel=2)
+
+  Top-5 TF-IDF:
+    1. B07HHDSFJK  score=0.522  rel=0
+    2. B07HM719FM  score=0.484  rel=0
+    3. B07JCB5XR5  score=0.483  rel=0
+    4. B07SS6PMLN  score=0.454  rel=0
+    5. B002R5BFQO  score=0.437  rel=0
+  Top-5 BM25:
+    1. B07HHDSFJK  score=22.245  rel=0
+    2. B073ZN82J3  score=21.829  rel=2
+    3. B07JCB5XR5  score=21.684  rel=0
+    4. B01BXLYEQ0  score=21.435  rel=2
+    5. B002R5BFQO  score=21.379  rel=0
+
+----------------------------------------------------------------
+QUERY: portable bidet
+Known judged products: B01N2MCLG5(rel=1)
+
+  Top-5 TF-IDF:
+    1. B08VJBSB47  score=0.723  rel=0
+    2. B0815B8VZR  score=0.590  rel=0
+    3. B00A0RHSJO  score=0.493  rel=0
+    4. B074MMWZYQ  score=0.453  rel=0
+    5. B08NWDJB8Z  score=0.403  rel=0
+  Top-5 BM25:
+    1. B08VJBSB47  score=17.675  rel=0
+    2. B08NWDJB8Z  score=17.384  rel=0
+    3. B00A0RHSJO  score=16.779  rel=0
+    4. B0815B8VZR  score=16.371  rel=0
+    5. B07KX9J9DQ  score=15.184  rel=0
+
+----------------------------------------------------------------
+QUERY: scmidt's deodorant
+Known judged products: B0767KYP92(rel=3)
+
+  Top-5 TF-IDF:
+    1. B0923BB3PK  score=0.611  rel=0
+    2. B0767KYP92  score=0.602  rel=3
+    3. B07DNGSBSC  score=0.591  rel=0
+    4. B08SPZ8WR1  score=0.571  rel=0
+    5. B000VOHOG8  score=0.569  rel=0
+  Top-5 BM25:
+    1. B001ECQ4QM  score=15.649  rel=0
+    2. B0767KYP92  score=15.574  rel=3
+    3. B07DNGSBSC  score=15.556  rel=0
+    4. B071G16W13  score=15.524  rel=0
+    5. B08372TVSH  score=15.344  rel=0
+
+----------------------------------------------------------------
+QUERY: tankless water heater
+Known judged products: B0084CPEDE(rel=3)
+
+  Top-5 TF-IDF:
+    1. B07VWQC7R8  score=0.689  rel=0
+    2. B00TUC3ETI  score=0.599  rel=0
+    3. B00IX0V57Q  score=0.527  rel=0
+    4. B07JVH69C1  score=0.507  rel=0
+    5. B07RS9TLVN  score=0.458  rel=0
+  Top-5 BM25:
+    1. B07VWQC7R8  score=29.789  rel=0
+    2. B00IX0V57Q  score=29.513  rel=0
+    3. B07JVH69C1  score=29.158  rel=0
+    4. B0084CPDFS  score=23.604  rel=0
+    5. B00DQYHVJ0  score=23.072  rel=0

@@ -1,0 +1,27 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+
+# Large raw datasets (kept locally, not committed)
+data/shopping_queries_dataset_examples.parquet
+data/shopping_queries_dataset_products.parquet
+
+# Keep the processed sample used for development:
+# data/processed/sample_esci_50k.parquet

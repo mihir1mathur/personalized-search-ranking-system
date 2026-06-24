@@ -1,0 +1,315 @@
+============================================================
+WEEK 0 - DATASET VERIFICATION + BEGINNER UNDERSTANDING
+Project 3: Personalized Search Ranking System
+Dataset: Amazon ESCI Shopping Queries Dataset
+============================================================
+
+This file explains Week 0 in very simple language. No prior
+machine-learning knowledge is needed to read it.
+
+
+------------------------------------------------------------
+1. WHAT IS THIS PROJECT TRYING TO BUILD?
+------------------------------------------------------------
+We are building a "search ranking system." Imagine you type
+something into Amazon's search box, like "wireless headphones."
+The website shows you a list of products. The big question is:
+
+    In what ORDER should those products appear?
+
+A good system puts the products you most likely want at the
+TOP, and the unrelated ones at the bottom. That ordering job
+is called "ranking." Our goal across the whole project is to
+build a system that ranks products well for a given search.
+
+Week 0 is the warm-up: we do NOT build the ranking system yet.
+We first make sure we fully understand and trust the data.
+
+
+------------------------------------------------------------
+2. WHAT EACH DATASET FILE MEANS
+------------------------------------------------------------
+There are three files in the "data" folder:
+
+(a) shopping_queries_dataset_examples.parquet
+    - This is the "answer key" of the dataset.
+    - Each row is a (search query, product) pair, plus a
+      label saying how relevant that product is to that query.
+    - Think of it as: "For this search, here is one product,
+      and here is how good a match it is."
+
+(b) shopping_queries_dataset_products.parquet
+    - This is the "product catalog."
+    - Each row is one product with its details: title,
+      description, bullet points, brand, and color.
+    - The examples file only stores a product's ID, not its
+      text. The product text lives here.
+
+(c) shopping_queries_dataset_sources.csv
+    - This is a small extra file.
+    - It tells us where each query originally came from
+      (for example: behavioral data, negations, etc.).
+    - We mostly just look at it in Week 0; it is background info.
+
+
+------------------------------------------------------------
+3. WHAT DOES "QUERY" MEAN?
+------------------------------------------------------------
+A "query" is simply what a shopper types into the search box.
+Examples: "running shoes", "iphone charger", "blue yoga mat".
+It is the question the shopper is asking the search engine.
+
+
+------------------------------------------------------------
+4. WHAT DOES "product_id" MEAN?
+------------------------------------------------------------
+Every product has a unique code that identifies it, called
+"product_id" (similar to a barcode). The examples table uses
+this code to point at a product without repeating all its text.
+The products table uses the same code to store the full details.
+Because both tables share this code, we can "join" them: match
+each example to the correct product using product_id.
+
+
+------------------------------------------------------------
+5. WHAT DO THE ESCI LABELS MEAN?
+------------------------------------------------------------
+ESCI is just four letters, each describing how relevant a
+product is to a search query:
+
+    E = Exact
+        The product is exactly what the shopper searched for.
+        (Search "red running shoes" -> a pair of red running shoes.)
+
+    S = Substitute
+        Not exactly it, but a reasonable alternative that could
+        still satisfy the shopper.
+        (Search "red running shoes" -> blue running shoes.)
+
+    C = Complement
+        A related item that goes WITH the searched item but is
+        not the item itself.
+        (Search "red running shoes" -> running socks.)
+
+    I = Irrelevant
+        Not related to the search at all.
+        (Search "red running shoes" -> a kitchen blender.)
+
+
+------------------------------------------------------------
+6. WHY CONVERT E/S/C/I INTO 3/2/1/0?
+------------------------------------------------------------
+Computers and models work with NUMBERS, not letters. We also
+want to capture that some matches are "better" than others.
+So we use a graded scale where a bigger number means more
+relevant:
+
+    E = 3   (best match)
+    S = 2   (good alternative)
+    C = 1   (related but not the item)
+    I = 0   (not relevant)
+
+This ordering (3 > 2 > 1 > 0) lets us later teach a model to
+put higher-scoring products at the top of the search results.
+
+
+------------------------------------------------------------
+7. WHY DO WE JOIN EXAMPLES WITH PRODUCTS?
+------------------------------------------------------------
+The examples file tells us WHICH product was judged and HOW
+relevant it is, but it does not contain the product's text.
+The products file has the text but no relevance labels.
+
+By joining the two tables on product_id (and locale), each row
+ends up having BOTH the relevance label AND the product text.
+That combined row is what a ranking model needs to learn from.
+
+
+------------------------------------------------------------
+8. WHY DO WE CREATE "product_text"?
+------------------------------------------------------------
+A product's information is split across several columns:
+title, description, bullet points, brand, and color.
+A search model reads text, so it is easier to give it ONE
+rich text field per product instead of five separate ones.
+
+So we glue those columns together into a single column called
+"product_text." This single field describes the product fully
+and is what future weeks will search and rank over.
+
+
+------------------------------------------------------------
+9. WHY DO WE CREATE A SMALLER 50,000-ROW SAMPLE?
+------------------------------------------------------------
+The full dataset has millions of rows. Running experiments on
+all of it would be slow and could overwhelm a normal laptop.
+
+So we take a smaller sample of up to 50,000 rows. We also make
+it "balanced," meaning we try to include a fair number of each
+relevance level (3, 2, 1, 0). If we did not balance it, one
+label could dominate and a model might just learn to always
+guess that label. The balanced sample keeps development fast
+and fair. (We keep the full data too; the sample is just for
+quick work.)
+
+
+------------------------------------------------------------
+10. WHY NO BM25, FAISS, OR TRANSFORMERS YET?
+------------------------------------------------------------
+Those are the actual ranking/search tools we will build later:
+  - BM25: a classic keyword-matching ranking method.
+  - FAISS: a library for fast similarity search over vectors.
+  - Transformers: modern neural language models.
+
+But building on data you do not understand or trust leads to
+hidden bugs and wasted time. Week 0's whole point is to FIRST
+verify, clean, and understand the data. With a solid, trusted
+dataset in hand, the later weeks become much easier and safer.
+This is exactly how real applied-science work is sequenced.
+
+
+------------------------------------------------------------
+11. WHAT FILES WERE CREATED?
+------------------------------------------------------------
+After running the Week 0 script, you will have:
+
+  - src/dataset_preprocessing.py
+        The script that does all the Week 0 work.
+
+  - data/processed/sample_esci_50k.parquet
+        The cleaned, balanced 50k sample with product_text and
+        the numeric relevance_score column.
+
+  - results/week0_dataset_summary.txt
+        A human-readable report of everything the script found
+        (shapes, columns, label distribution, join results, etc.).
+
+  - docs/Week0.txt
+        This explanation file.
+
+(The folders src, data/processed, results, and docs are also
+created if they did not already exist.)
+
+
+------------------------------------------------------------
+12. WHAT SHOULD NEXT WEEK FOCUS ON?
+------------------------------------------------------------
+Week 1 should focus on the first retrieval baselines.
+
+The goal is not to build the final search system immediately.
+
+Week 1 should:
+
+1. Build a TF-IDF baseline.
+2. Build a BM25 baseline.
+3. Compare both methods.
+4. Evaluate using:
+
+   * Precision@K
+   * Recall@K
+   * NDCG@K
+
+These are the first keyword-based retrieval methods.
+
+Later weeks will introduce:
+
+* Sentence Transformer retrieval
+* Dense embeddings
+* FAISS vector search
+* Hybrid retrieval
+* Transformer re-ranking
+* Fine-tuning
+
+The purpose of Week 1 is to establish simple baselines that
+future retrieval models must beat.
+
+
+------------------------------------------------------------
+13. HOW THIS PROJECT ALIGNS WITH MICROSOFT APPLIED SCIENCE
+------------------------------------------------------------
+Applied Science roles (for example at Microsoft) are about
+turning data into systems that improve a real product, and
+doing it rigorously. This project mirrors that work:
+  - It starts with careful data verification and understanding
+    (exactly what Week 0 is), which is how serious applied
+    scientists begin any project.
+  - It uses graded relevance labels and proper ranking metrics,
+    which are core to search/recommendation research.
+  - It moves from a simple, explainable baseline toward modern
+    neural retrieval, comparing methods fairly with metrics.
+This "understand the data -> baseline -> advanced model ->
+measure honestly" loop is the heart of applied science.
+
+
+------------------------------------------------------------
+14. HOW THIS PROJECT STILL HELPS AN AMAZON SDE PATH
+------------------------------------------------------------
+Even for a Software Development Engineer (SDE) role, this
+project builds valuable, transferable skills:
+  - Handling large, real-world data files efficiently.
+  - Writing clean, well-documented, reusable Python code.
+  - Building data pipelines: load -> clean -> join -> sample -> save.
+  - Designing a clear project structure (src, data, results, docs).
+  - Reasoning about correctness and edge cases (missing columns,
+    missing files, missing values) with proper error handling.
+Search and ranking systems are huge at Amazon, so understanding
+how relevance data and ranking work also makes you a stronger
+engineer on any team that touches search or recommendations.
+
+
+------------------------------------------------------------
+KEY WEEK 0 OBSERVATIONS
+------------------------------------------------------------
+* Dataset size:
+    2.6 million examples
+    1.8 million products
+
+* US dataset:
+    1.8 million rows
+
+* Unique queries:
+    130k+
+
+* Unique products:
+    1.8 million+
+
+* Strong label imbalance:
+    E >> S >> I >> C
+
+* Balanced 50k sample created.
+
+WHY THESE OBSERVATIONS MATTER:
+
+* Dataset size (2.6M examples / 1.8M products): The data is far
+  too large to load and join naively in memory. This is exactly
+  why our pipeline filters and samples on the lightweight
+  examples table BEFORE attaching the heavy product text. It
+  also tells us future neural methods will need batching and
+  efficient indexing (e.g. FAISS) to scale.
+
+* US dataset (1.8M rows): After focusing on English (US), we
+  still have plenty of data. We are not starved for examples, so
+  a 50k sample is a reasonable, fast working subset.
+
+* Unique queries (130k+): Many distinct search intents exist, so
+  a good ranking system must generalize across many query types,
+  not memorize a few. This is why query length analysis matters.
+
+* Unique products (1.8M+): The catalog is large, so retrieval
+  must efficiently narrow millions of products down to a short,
+  relevant list -- the core challenge of search.
+
+* Strong label imbalance (E >> S >> I >> C): Most judged pairs
+  are "Exact" matches and very few are "Complement". If we
+  trained on the raw distribution, a model could score well just
+  by predicting "Exact" all the time. This is the key reason we
+  built a BALANCED 50k sample, and why evaluation must use
+  ranking metrics (Precision@K, Recall@K, NDCG@K) rather than
+  plain accuracy.
+
+* Balanced 50k sample: Gives every relevance level (3/2/1/0)
+  fair representation and keeps development fast and reproducible.
+
+============================================================
+End of Week 0 explanation.
+============================================================

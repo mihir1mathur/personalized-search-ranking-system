@@ -1,0 +1,70 @@
+================================================================
+WEEK 1: RETRIEVAL BASELINES -- METRICS REPORT
+Project 3: Personalized Search Ranking System
+================================================================
+
+SETUP
+----------------------------------------------------------------
+Search corpus (unique products): 48,114
+Total unique queries in sample : 33,457
+Queries evaluated (random sample): 3,000
+Top-K retrieved per query        : 10
+Relevance threshold (relevant if score >= ): 1
+Relevance scale: 3=highly relevant, 2=relevant, 1=weakly relevant, 0=irrelevant
+
+COMPARISON TABLE (averages across evaluated queries)
+----------------------------------------------------------------
+| Method | Precision@10 | Recall@10 | NDCG@10 |
+| ------ | ------------ | --------- | ------- |
+| TF-IDF | 0.0442       | 0.3208    | 0.1940  |
+| BM25   | 0.0657       | 0.4737    | 0.3434  |
+
+WHICH METHOD PERFORMS BETTER?
+----------------------------------------------------------------
+On NDCG@10 (our headline ranking metric), the better method is: BM25.
+
+WHY BM25 OFTEN BEATS TF-IDF:
+  - Term-frequency saturation: BM25 stops rewarding a word after
+    it appears a few times, so 'keyword stuffed' products do not
+    dominate. Plain TF-IDF keeps rewarding repeats more linearly.
+  - Document-length normalization: BM25 fairly handles long product
+    descriptions, so a short, on-topic title can still win over a
+    long, loosely-related description.
+  - These two ideas usually make BM25 rank the truly relevant
+    products a little higher, which NDCG rewards.
+
+WHERE TF-IDF STILL WORKS WELL:
+  - Short, clean documents where length normalization matters less.
+  - When you need cosine similarity vectors for other tasks
+    (clustering, simple similarity, feeding another model).
+  - As a fast, easy-to-explain baseline that is built into scikit-learn.
+
+These keyword baselines are the bar that future dense-retrieval and
+transformer models (later weeks) must beat.
+
+----------------------------------------------------------------
+LIMITATIONS OF KEYWORD SEARCH
+----------------------------------------------------------------
+BM25 is strong, but it is NOT sufficient on its own. Both BM25 and
+TF-IDF share the same core weakness: they match WORDS, not MEANING.
+
+  - Exact-word dependence: a product is only matched if it literally
+    contains the query words. If the shopper and the product use
+    different words for the same thing, the product can be missed.
+  - Abbreviation problems: "pjs" is not recognized as "pajamas",
+    "TV" is not recognized as "television".
+  - Synonym problems: "cord" is treated as unrelated to "cable",
+    "laptop" as unrelated to "notebook computer".
+  - Semantic understanding limitations: keyword scoring cannot grasp
+    intent or themes (e.g. "portable", "tankless vs tank", or a
+    "horror" theme) -- it only counts shared words and discounts by
+    word rarity and document length.
+
+WHY BM25 IS STRONG BUT NOT SUFFICIENT:
+  BM25 wins this week because, when the wording matches, its
+  saturation and length-normalization rank the right products well.
+  But when the wording differs (synonyms, abbreviations, spelling
+  mistakes, paraphrases), BM25 has no way to know two different words
+  mean the same thing. See results/week1_failure_cases.txt for five
+  real queries where this breaks down. Closing this "meaning gap" is
+  the motivation for Week 2's embedding-based semantic retrieval.
