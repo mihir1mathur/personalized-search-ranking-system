@@ -1,0 +1,50 @@
+# =============================================================================
+# search-api.service  --  FastAPI backend (uvicorn) for the search API.
+# -----------------------------------------------------------------------------
+# Install:
+#   sudo cp deployment/systemd/search-api.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now search-api
+#   sudo systemctl status search-api
+#   journalctl -u search-api -f          # live logs
+#
+# Assumes:
+#   * repo checked out at   /opt/search-ranking
+#   * virtualenv at         /opt/search-ranking/.venv
+#   * env file at           /etc/search-ranking/search.env
+#   * service user          searchapp (create with the setup script)
+# Adjust the three paths + User/Group if your layout differs.
+# =============================================================================
+[Unit]
+Description=Personalized Search Ranking API (FastAPI/uvicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=searchapp
+Group=searchapp
+WorkingDirectory=/opt/search-ranking
+EnvironmentFile=/etc/search-ranking/search.env
+# Model load takes ~47s on the dev box; give the cross-encoder + embedding
+# matrix generous room to load on a smaller vCPU instance before systemd
+# considers startup failed.
+TimeoutStartSec=300
+ExecStart=/opt/search-ranking/.venv/bin/uvicorn api.main:app \
+    --host 0.0.0.0 --port 8000 --workers 1
+# Keep ONE worker: the pipeline holds ~2 GB resident; each extra worker would
+# duplicate the models and the embedding matrix. Scale out with more instances
+# behind a load balancer instead, not with more workers on one box.
+Restart=on-failure
+RestartSec=5
+# --- Hardening (safe defaults; the app only reads the repo + writes logs/) ---
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=false
+# StandardOutput/Error go to the journal (and CloudWatch if the agent tails it).
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,160 @@
+/* =========================================================================
+   styles.css  --  custom styling for the Personalized Search Ranking UI.
+   Injected once per page via components.load_css(). Kept framework-agnostic:
+   result cards are rendered as our own HTML blocks with these classes, so the
+   look is stable across Streamlit versions.
+   ========================================================================= */
+
+/* ---- Layout polish ---------------------------------------------------- */
+.block-container {
+    padding-top: 2.2rem;
+    padding-bottom: 3rem;
+    max-width: 1100px;
+}
+
+/* ---- Hero / title ----------------------------------------------------- */
+.app-hero {
+    background: linear-gradient(120deg, #4C72B0 0%, #8172B3 55%, #C44E52 100%);
+    border-radius: 16px;
+    padding: 26px 30px;
+    color: #fff;
+    margin-bottom: 22px;
+    box-shadow: 0 8px 24px rgba(76, 114, 176, 0.25);
+}
+.app-hero h1 {
+    margin: 0;
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+.app-hero p {
+    margin: 6px 0 0 0;
+    font-size: 0.98rem;
+    opacity: 0.92;
+}
+
+/* ---- Section headers -------------------------------------------------- */
+.section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 18px 0 6px 0;
+    color: #2f2f37;
+}
+
+/* ---- Result cards ----------------------------------------------------- */
+.result-card {
+    display: flex;
+    align-items: stretch;
+    gap: 16px;
+    background: #ffffff;
+    border: 1px solid #ecedf1;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 10px rgba(20, 20, 40, 0.05);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(20, 20, 40, 0.10);
+}
+.rank-badge {
+    flex: 0 0 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(160deg, #4C72B0, #8172B3);
+    border-radius: 12px;
+    min-height: 46px;
+}
+.rank-badge.top { background: linear-gradient(160deg, #C9A227, #CCB974); }
+.card-body { flex: 1 1 auto; min-width: 0; }
+.card-title {
+    font-size: 1.02rem;
+    font-weight: 650;
+    color: #23232b;
+    line-height: 1.35;
+    margin-bottom: 8px;
+}
+.card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.pill {
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #f1f3f8;
+    color: #444b5a;
+    border: 1px solid #e6e8ef;
+    white-space: nowrap;
+}
+.pill.method { background: #ece7f6; color: #5a4a8a; border-color: #ddd3f0; }
+.pill.pid    { font-family: ui-monospace, "Cascadia Code", monospace; }
+.pill.conf   { background: #e7f2ec; color: #2f7a52; border-color: #cfe6d9; }
+.pill.score  { background: #eef1f6; color: #3a4a63; }
+
+/* Confidence bar */
+.conf-bar {
+    height: 7px;
+    background: #eef0f5;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.conf-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #55A868, #4C72B0);
+    border-radius: 999px;
+}
+
+/* ---- Badges / status -------------------------------------------------- */
+.cached-badge {
+    display: inline-block;
+    background: #fff6d6;
+    color: #8a6d00;
+    border: 1px solid #f0e2a6;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.status-ok   { background: #e7f2ec; color: #2f7a52; border: 1px solid #cfe6d9; }
+.status-bad  { background: #fdecec; color: #b0343a; border: 1px solid #f3cccd; }
+
+/* ---- Friendly error box ---------------------------------------------- */
+.error-box {
+    background: #fdecec;
+    border: 1px solid #f3cccd;
+    border-left: 5px solid #C44E52;
+    color: #8a2c30;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    margin: 8px 0;
+}
+
+/* ---- Pipeline flow chips (Pipeline page) ------------------------------ */
+.flow-chip {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #e2e4ec;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 650;
+    color: #33333c;
+    box-shadow: 0 2px 8px rgba(20,20,40,0.05);
+    margin: 4px 0;
+}
+.flow-arrow { text-align: center; color: #8172B3; font-size: 1.2rem; margin: 2px 0; }
+
+/* Footer caption */
+.app-footer { color: #8a8f9c; font-size: 0.82rem; margin-top: 26px; text-align: center; }

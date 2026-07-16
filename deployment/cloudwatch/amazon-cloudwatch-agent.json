@@ -1,0 +1,40 @@
+{
+  "_comment": "CloudWatch agent config for the search-ranking instance. Install the agent (sudo apt-get install -y amazon-cloudwatch-agent OR the .deb from S3), place this at /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json, then: sudo amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/.../amazon-cloudwatch-agent.json -s . Requires the instance role to allow cloudwatch:PutMetricData and logs:CreateLogStream/PutLogEvents.",
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "cwagent"
+  },
+  "metrics": {
+    "namespace": "SearchRanking",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
+    "metrics_collected": {
+      "mem": {
+        "measurement": ["mem_used_percent", "mem_available_mb"]
+      },
+      "disk": {
+        "measurement": ["used_percent"],
+        "resources": ["/"]
+      },
+      "cpu": {
+        "measurement": ["cpu_usage_active"],
+        "totalcpu": true
+      }
+    }
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/opt/search-ranking/logs/api.log",
+            "log_group_name": "/search-ranking/api",
+            "log_stream_name": "{instance_id}",
+            "retention_in_days": 14
+          }
+        ]
+      }
+    }
+  }
+}

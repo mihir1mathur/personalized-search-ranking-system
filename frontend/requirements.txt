@@ -1,0 +1,14 @@
+# Week 7 frontend (Streamlit) dependencies.
+# Install with:  pip install -r frontend/requirements.txt
+# The frontend is a pure HTTP client of the Week 6 FastAPI backend; it does not
+# import any backend Python code.
+
+streamlit==1.59.1
+requests==2.34.2
+
+# Used by the Benchmark page (charts) and the asset generator (diagrams).
+pandas==2.2.2
+matplotlib==3.9.0
+
+# Frontend smoke tests.
+pytest==9.1.1

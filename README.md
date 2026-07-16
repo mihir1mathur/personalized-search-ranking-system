@@ -1,210 +1,241 @@
 # Personalized Search Ranking System
 
-A search and ranking system built on real e-commerce search data. The project
-implements and evaluates information retrieval methods that take a shopper's
-query and rank candidate products by relevance, starting from classic lexical
-baselines and building toward modern semantic retrieval.
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white" alt="Python 3.11"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI"></a>
+  <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white" alt="Streamlit"></a>
+  <a href="https://lightgbm.readthedocs.io/"><img src="https://img.shields.io/badge/LightGBM-02569B?logo=databricks&logoColor=white" alt="LightGBM"></a>
+  <img src="https://img.shields.io/badge/tests-69%20passing-brightgreen" alt="Tests: 69 passing">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://aws.amazon.com/"><img src="https://img.shields.io/badge/AWS-Ready-FF9900?logo=amazonaws&logoColor=white" alt="AWS Ready"></a>
+</p>
 
-## Project Overview
+A production-grade search and ranking system built on real e-commerce search
+data. It takes a shopper's query and ranks candidate products by relevance
+through a multi-stage **retrieve → re-rank → learn-to-rank** pipeline, then
+serves the trained model as a **FastAPI REST API** with a **Streamlit** web app.
 
-Product search is the problem of returning the most relevant items from a large
-catalog in response to a free-text query such as `wireless headphones` or
-`blue yoga mat`. The core challenge is **ranking**: given many candidate
-products, decide the order in which they should appear so that the items a user
-most likely wants surface at the top.
+![Search UI](frontend/assets/screenshot_search.png)
 
-This project sits at the intersection of three ideas:
+**Highlights**
 
-- **Information retrieval** — efficiently finding relevant documents (products)
-  from a large collection for a given query.
-- **Ranking systems** — ordering those results so that more relevant items
-  appear first, using graded relevance rather than a simple match/no-match.
-- **Search relevance** — measuring *how well* a result actually satisfies the
-  intent behind a query, and quantifying that quality with standard metrics.
+- **48,114-product** search corpus with graded human relevance labels.
+- **Six retrieval/ranking approaches** compared on identical queries and metrics.
+- Best **NDCG@10 of 0.5044** — a **+31.6%** lift over the BM25 baseline.
+- **Seven FastAPI endpoints** with auto-generated Swagger docs.
+- **Six-page Streamlit** search interface.
+- **69 passing automated tests** across backend and frontend.
+- **CPU-only inference** — no GPU required.
+- **MIT-licensed** and **AWS-ready** architecture.
 
-The work is grounded in the **Amazon ESCI Shopping Queries Dataset**, a large
-public benchmark of real shopping queries paired with products and human
-relevance judgments.
+<p align="center">
+  <img src="frontend/assets/architecture.png" alt="Architecture" width="720">
+</p>
 
-## Dataset
+## Table of Contents
 
-The project uses the **Amazon ESCI Shopping Queries Dataset**. Key figures:
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Pipeline](#pipeline)
+- [Repository Structure](#repository-structure)
+- [Results](#results)
+- [Screenshots](#screenshots)
+- [API](#api)
+- [Installation](#installation)
+- [Running Locally](#running-locally)
+- [Configuration](#configuration)
+- [AWS Deployment](#aws-deployment)
+- [License](#license)
 
-| Item | Count |
+## Overview
+
+Product search returns the most relevant items from a large catalog in response
+to a free-text query such as `wireless headphones` or `blue yoga mat`. The core
+challenge is **ranking**: given many candidate products, decide the order they
+appear in so the items a shopper most likely wants surface at the top. Small
+ranking gains translate into large gains in discovery, conversion, and trust.
+
+The system is grounded in the **Amazon ESCI Shopping Queries Dataset**, a public
+benchmark of real shopping queries paired with products and graded human
+relevance judgments (Exact / Substitute / Complement / Irrelevant, mapped to
+3 / 2 / 1 / 0). This enables NDCG-based evaluation and a fair comparison of every
+retrieval method on the same queries, corpus, and metrics.
+
+The final architecture is a multi-stage funnel: fast lexical + semantic retrieval
+narrows ~48K products to a small candidate set, a **cross-encoder** re-scores that
+set by reading each query and product jointly, and a **Learning-to-Rank** model
+learns to combine every signal into the final ordering. The trained pipeline is
+served over HTTP by a FastAPI backend and consumed by a Streamlit search app.
+
+## Features
+
+- **TF-IDF and BM25** lexical retrieval baselines.
+- **Sentence-Transformer embeddings** (`all-MiniLM-L6-v2`) with **FAISS** search.
+- **Hybrid** lexical–semantic score fusion.
+- **Cross-encoder** Top-50 re-ranking.
+- **LightGBM LambdaMART** Learning-to-Rank stage.
+- **FastAPI REST API** with auto-generated **Swagger** docs.
+- **Streamlit** search interface.
+- **Query caching** for near-instant repeat queries.
+- **Health and version** endpoints.
+- **Typed Pydantic** request/response contracts.
+- **Structured request logging** with correlation IDs.
+- **Environment-based configuration** — no hardcoded paths.
+- **Automated backend and frontend tests**.
+- **CPU-only deployment**.
+
+## Tech Stack
+
+| Layer | Technologies |
 | --- | --- |
-| Examples (query–product judgments) | ~2.6 million |
-| Products | ~1.8 million |
-| Unique queries | ~130,000 |
+| Language | Python |
+| Lexical retrieval | scikit-learn (TF-IDF), rank-bm25 |
+| Semantic retrieval | Sentence-Transformers (`all-MiniLM-L6-v2`), FAISS |
+| Re-ranking | Cross-encoder (`ms-marco-MiniLM-L-6-v2`) |
+| Learning-to-Rank | LightGBM (LambdaMART) |
+| API | FastAPI, Pydantic, Uvicorn |
+| Frontend | Streamlit |
+| Testing | pytest |
 
-Each example pairs a query with a product and assigns one of four **ESCI
-relevance labels**:
-
-- **E — Exact**: the product is exactly what the query asked for.
-  (`red running shoes` → a pair of red running shoes)
-- **S — Substitute**: not exact, but a reasonable alternative that could still
-  satisfy the shopper. (`red running shoes` → blue running shoes)
-- **C — Complement**: a related item that goes *with* the searched item but is
-  not the item itself. (`red running shoes` → running socks)
-- **I — Irrelevant**: not related to the query at all.
-  (`red running shoes` → a kitchen blender)
-
-For modeling, these labels are mapped to a graded numeric relevance scale where
-a higher number means a better match: **E = 3, S = 2, C = 1, I = 0**. This
-ordering lets the system learn to place higher-scoring products at the top of
-the results and enables ranking metrics like NDCG.
-
-## Project Goals
-
-- Build **lexical retrieval baselines** (TF-IDF and BM25).
-- **Evaluate search quality** with standard ranking metrics.
-- **Compare retrieval methods** fairly on the same data and metrics.
-- **Study search relevance** and where keyword matching breaks down.
-- Lay the groundwork to **develop semantic search systems** that go beyond
-  exact keyword overlap.
-
-## Project Pipeline
+## Pipeline
 
 ```
 Dataset
-    ↓
-Preprocessing
-    ↓
+   ↓
 TF-IDF
-    ↓
+   ↓
 BM25
-    ↓
-Evaluation
-    ↓
-Failure Analysis
-    ↓
-Dense Retrieval (future)
-    ↓
-Re-ranking (future)
+   ↓
+Embeddings
+   ↓
+FAISS
+   ↓
+Hybrid
+   ↓
+CrossEncoder
+   ↓
+Learning-to-Rank
+   ↓
+FastAPI
+   ↓
+REST API
+   ↓
+Streamlit
 ```
+
+At the final stage, **LambdaMART learns how to combine lexical, semantic, hybrid,
+and cross-encoder signals into the final product ordering using graded relevance
+labels.**
 
 ## Repository Structure
 
 ```
 .
-├── data/
-│   ├── shopping_queries_dataset_examples.parquet
-│   ├── shopping_queries_dataset_products.parquet
-│   ├── shopping_queries_dataset_sources.csv
-│   └── processed/
-│       └── sample_esci_50k.parquet
-├── src/
-│   ├── dataset_preprocessing.py     # Load, clean, balance, and sample the dataset
-│   ├── tfidf_retriever.py           # TF-IDF lexical retrieval baseline
-│   ├── bm25_retriever.py            # BM25 lexical retrieval baseline
-│   └── evaluate_retrieval.py        # Run retrieval and compute ranking metrics
-├── evaluation/
-│   └── metrics.py                   # Precision@K, Recall@K, NDCG@K
-├── results/
-│   ├── week0_dataset_summary.txt
-│   ├── sample_esci_100.csv
-│   ├── sample_query_analysis.txt
-│   ├── query_length_distribution.png
-│   ├── retrieval_results.csv
-│   ├── week1_metrics.txt
-│   ├── week1_failure_cases.txt
-│   └── tfidf_vs_bm25_metrics.png
-├── docs/
-│   ├── Week0_Data_Understanding.md
-│   └── Week1_Retrieval_Baselines.md
-├── notes/
-│   ├── Week0.txt
-│   └── Week1.txt
+├── src/            # Retrieval, re-ranking, and LTR models + evaluation scripts
+├── api/            # Production FastAPI backend (routers, services, schemas, tests)
+├── frontend/       # Streamlit search app (pure HTTP client of the backend)
+├── evaluation/     # Ranking metrics (Precision@K, Recall@K, NDCG@K)
+├── models/         # Local cross-encoder + trained LambdaMART model
+├── results/        # Metrics, benchmarks, and generated diagrams
+├── data/           # Dataset download/setup instructions; raw data kept local
 ├── requirements.txt
 ├── LICENSE
-├── .gitignore
 └── README.md
 ```
 
-## Week 0: Dataset Preprocessing
+## Results
 
-The first stage verifies and prepares the data before any modeling:
+**Final ranking quality improved from NDCG@10 `0.3831` with BM25 to `0.5044` with
+Hybrid + Cross-Encoder + LTR.**
 
-- **Filtering**: focus on the US / English subset of the dataset to keep the
-  text consistent with an English-language retrieval setup.
-- **Balancing**: build a sample of up to 50,000 rows with roughly equal numbers
-  of each relevance level (3/2/1/0), so no single label dominates.
-- **Preprocessing**: join the examples and products tables on product ID, map
-  the ESCI labels to numeric scores, drop rows with missing essential fields,
-  and combine the product title, description, bullet points, brand, and color
-  into a single `product_text` field.
-- **Query analysis**: measure query length (in words) and its distribution to
-  understand how broad or specific user queries tend to be.
+All six methods are scored on the **same 225 held-out test queries** the LTR
+model never trained on (split by query, fixed seed), against the 48,114-product
+corpus at a cutoff of 10.
 
-## Week 1: Retrieval Baselines
+| Method | Precision@10 | Recall@10 | NDCG@10 | MAP | MRR |
+| --- | --- | --- | --- | --- | --- |
+| TF-IDF | 0.0387 | 0.2941 | 0.1679 | 0.1211 | 0.1442 |
+| BM25 | 0.0707 | 0.5130 | 0.3831 | 0.3272 | 0.3826 |
+| Embeddings | 0.0684 | 0.5150 | 0.3507 | 0.2853 | 0.3149 |
+| Hybrid | 0.0804 | 0.5896 | 0.4348 | 0.3710 | 0.4220 |
+| Hybrid + Cross-Encoder | 0.0893 | 0.6440 | 0.5006 | 0.4410 | 0.4825 |
+| **Hybrid + Cross-Encoder + LTR** | **0.0893** | **0.6444** | **0.5044** | **0.4455** | **0.4872** |
 
-This stage builds two classic lexical retrieval baselines and evaluates them
-with standard ranking metrics computed at a cutoff of 10 results.
+The full pipeline ending in **Learning-to-Rank is the best method** on every
+ranking-quality metric (NDCG@10, MAP, MRR). It improves NDCG@10 by **+16.0%** over
+the hybrid retriever and **+31.6%** over BM25.
 
-- **TF-IDF**: ranks products by term-frequency / inverse-document-frequency
-  similarity between the query and `product_text`.
-- **BM25**: a probabilistic keyword-ranking function that improves on TF-IDF
-  with term-frequency saturation and document-length normalization.
-- **Precision@10**: of the top 10 retrieved products, the fraction that are
-  relevant.
-- **Recall@10**: of all relevant products, the fraction found in the top 10.
-- **NDCG@10**: a graded ranking metric that rewards placing more relevant
-  products higher in the list.
+> **Note on Precision@10.** Precision stays low for every method because the labels
+> are sparse: most queries have only 1–2 judged-relevant products, so a single
+> relevant item already caps Precision@10 at 0.10. Recall@10 and NDCG@10 are the
+> informative metrics in this setup.
 
-### Results
+## Screenshots
 
-**TF-IDF**
+**Search page** — result cards with rank, title, product ID, confidence bar, raw
+score, latency, ranking method, expandable details, and a ⚡ Cached Result badge:
 
-| Metric | Score |
+![Search page](frontend/assets/screenshot_search.png)
+
+**Health page** — live backend status, version, pipeline stages, corpus size,
+loaded components, and cache status:
+
+![Health page](frontend/assets/screenshot_health.png)
+
+**User flow:**
+
+![User flow](frontend/assets/user_flow.png)
+
+## API
+
+The backend uses a layered design where the web layer knows nothing about ML and
+the ML layer knows nothing about HTTP — they meet only through typed Pydantic
+models. A single `SearchService` loads every model, cached embedding, FAISS index,
+and the trained LTR model once and reuses them.
+
+| Method & Path | Purpose |
 | --- | --- |
-| Precision@10 | 0.0442 |
-| Recall@10 | 0.3208 |
-| NDCG@10 | 0.1940 |
+| `POST /search` | Generic search; pick `method`: `tfidf`, `bm25`, `embedding`, `hybrid`, `rerank`, or `ltr`. |
+| `POST /hybrid-search` | Hybrid BM25 + embedding fusion (optional `alpha`/`beta`). |
+| `POST /rerank` | Hybrid retrieval → cross-encoder re-ranking. |
+| `POST /ltr-search` | Full pipeline → Learning-to-Rank (best quality, recommended). |
+| `GET /health` | Liveness/readiness probe (503 + missing components when degraded). |
+| `GET /version` | Build metadata: version, pipeline stages, model names. |
+| `GET /docs` | Interactive, auto-generated **Swagger UI**. |
 
-**BM25**
+```bash
+curl -X POST http://127.0.0.1:8000/ltr-search \
+     -H 'Content-Type: application/json' \
+     -d '{"query": "wireless noise cancelling headphones", "top_k": 3}'
+```
 
-| Metric | Score |
-| --- | --- |
-| Precision@10 | 0.0657 |
-| Recall@10 | 0.4737 |
-| NDCG@10 | 0.3434 |
+Performance measured on CPU:
 
-BM25 outperforms TF-IDF on every metric, which is consistent with its stronger
-handling of term frequency and document length.
+| Stage | Cold latency (mean) | Cached (warm) |
+| --- | --- | --- |
+| `tfidf` / `bm25` / `embedding` | ~60–300 ms | ~0.03 ms |
+| `hybrid` | ~110 ms | ~0.03 ms |
+| `rerank` / `ltr` | ~2.3 s (cross-encoder bound) | ~0.03 ms |
 
-## Failure Analysis
+An LRU + TTL query cache turns a repeated `ltr-search` from ~2.3 s into ~0.03 ms.
+The cross-encoder pass over the candidate shortlist is the dominant cost.
 
-Even the stronger lexical baseline misses relevant products when the query and
-the product text use different words for the same concept. Representative cases:
+## Production Engineering
 
-- **`pjs` vs `pajamas`** — an abbreviation the user types that never appears in
-  the product text.
-- **`charger cord` vs `cable`** — different vocabulary for the same kind of
-  accessory.
-- **`TV` vs `television`** — an acronym versus its full written form.
+The backend is built for reliability and clean separation of concerns:
 
-Keyword retrieval struggles here because TF-IDF and BM25 match on **exact token
-overlap**. They have no notion that two different words can mean the same thing,
-so synonyms, abbreviations, and acronyms cause relevant products to be scored as
-unrelated. This vocabulary mismatch is precisely the gap that semantic retrieval
-is designed to close.
-
-## Future Work
-
-The project is intentionally developed incrementally so that each retrieval stage can be evaluated against previously established baselines.
-
-The following stages are planned to move beyond lexical matching toward semantic
-understanding of queries and products:
-
-- **Sentence Transformers** — encode queries and products into dense vector
-  representations that capture meaning rather than surface words.
-- **Dense Retrieval** — retrieve by vector similarity so semantically related
-  items match even without shared keywords.
-- **FAISS** — index dense vectors for fast approximate nearest-neighbor search
-  over the full catalog.
-- **Hybrid Retrieval** — combine lexical (BM25) and dense signals to get the
-  precision of keywords and the recall of semantics.
-- **Cross-Encoder Re-ranking** — re-score the top candidates with a model that
-  reads the query and product jointly for a final, high-quality ordering.
+- **Layered FastAPI architecture** — routers, services, schemas, and middleware.
+- **`SearchService` boundary** cleanly separates HTTP handling from ranking logic.
+- **LRU + TTL query cache** for near-instant repeat queries.
+- **`GET /health`** liveness/readiness endpoint reporting loaded components.
+- **`GET /version`** endpoint exposing build metadata and pipeline stages.
+- **Typed Pydantic validation** on every request and response.
+- **Uniform JSON error responses** across the API.
+- **Request IDs and latency logging** on every call.
+- **Rotating log files** to keep disk usage bounded.
+- **Centralized environment-based configuration** with no hardcoded paths.
+- **41 backend tests** and **28 frontend tests** run with pytest.
 
 ## Installation
 
@@ -212,32 +243,73 @@ understanding of queries and products:
 pip install -r requirements.txt
 ```
 
-## Running the Project
-
-Preprocess the dataset (Week 0):
+## Running Locally
 
 ```bash
-python src/dataset_preprocessing.py
+# 1) start the backend (terminal 1)
+uvicorn api.main:app
+# interactive Swagger docs at http://127.0.0.1:8000/docs
+
+# 2) start the frontend (terminal 2)
+pip install -r frontend/requirements.txt
+streamlit run frontend/app.py
+# open http://localhost:8501
 ```
 
-Run retrieval and evaluation (Week 1):
+Reproduce the evaluation and train the models:
 
 ```bash
-python src/evaluate_retrieval.py
+python src/dataset_preprocessing.py   # load, clean, balance, sample the dataset
+python src/evaluate_retrieval.py      # TF-IDF + BM25 baselines
+python src/evaluate_embeddings.py     # embeddings + FAISS semantic retrieval
+python src/evaluate_hybrid.py         # hybrid weight sweep
+python src/evaluate_reranker.py       # cross-encoder re-ranking
+python src/evaluate_ltr.py            # train LTR + compare all six methods
 ```
 
-## Additional Documentation
+Run the test suites:
 
-- **[Week 0 — Data Understanding](docs/Week0_Data_Understanding.md):** dataset
-  understanding and preprocessing.
-- **[Week 1 — Retrieval Baselines](docs/Week1_Retrieval_Baselines.md):**
-  retrieval baselines and evaluation.
+```bash
+python -m pytest api/tests -q         # backend unit tests
+python -m pytest frontend/tests -q    # frontend smoke tests
+```
 
-## Notes
+> On a network-restricted machine, place the cross-encoder under
+> `models/ms-marco-MiniLM-L-6-v2` and set `HF_HUB_OFFLINE=1`. Product embeddings
+> and cross-encoder scores are cached, so nothing is re-encoded on re-runs.
 
-The repository includes detailed learning notes (in [`notes/`](notes/)) that
-explain the concepts, intuition, and evaluation process used during development.
+## Configuration
+
+Every setting is an environment variable (prefix `SEARCH_`) with sensible
+defaults and **no absolute paths**, so the same code runs on Windows, Linux, and
+AWS. Copy [`.env.example`](.env.example) to `.env` and adjust as needed — for
+example `SEARCH_DEFAULT_TOP_K`, `SEARCH_HYBRID_ALPHA`/`SEARCH_HYBRID_BETA`,
+`SEARCH_LOG_LEVEL`, or `SEARCH_API_URL` (which tells the frontend where the
+backend is).
+
+## AWS Deployment
+
+The project is **AWS-ready** and packaged for cloud deployment:
+
+- **Docker** containerization supported for both backend and frontend.
+- Deployable to **AWS App Runner** (simplest path) or **ECS/Fargate** (production
+  scale-up) behind a load balancer with autoscaling.
+- **CloudWatch** for logging and monitoring.
+- Fully configured through **environment variables** — no code changes per env.
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+Released under the [MIT License](LICENSE).
+
+## Acknowledgements
+
+- **[Amazon ESCI Shopping Queries Dataset](https://github.com/amazon-science/esci-data)**
+  — the real e-commerce search data this project is built and evaluated on.
+- **[Sentence-Transformers](https://www.sbert.net/)** — the `all-MiniLM-L6-v2`
+  embedding model and `ms-marco-MiniLM-L-6-v2` cross-encoder.
+- **[FAISS](https://github.com/facebookresearch/faiss)** — fast vector similarity search.
+- **[LightGBM](https://lightgbm.readthedocs.io/)** — the LambdaMART Learning-to-Rank implementation.
+- **[rank-bm25](https://github.com/dorianbrown/rank_bm25)**,
+  **[scikit-learn](https://scikit-learn.org/)**,
+  **[FastAPI](https://fastapi.tiangolo.com/)**, and
+  **[Streamlit](https://streamlit.io/)** — the retrieval, API, and UI toolkits.

@@ -1,27 +1,139 @@
-# Byte-compiled / optimized files
+# =============================================================================
+# .gitignore  --  Personalized Search Ranking System
+# Curated for a clean public GitHub push and later AWS EC2 deployment.
+#
+# Tracked & public: api/ src/ frontend/ evaluation/ deployment/ README.md
+#                   requirements.txt .env.example LICENSE .gitignore
+# Excluded:         personal notes, week docs, prompts, Claude files, local
+#                   datasets, runtime files, secrets, caches, virtualenvs,
+#                   and large ML artifacts (transferred to EC2 separately).
+# =============================================================================
+
+# --------------------------------------------------
+# Python caches and generated files
+# --------------------------------------------------
 __pycache__/
 *.py[cod]
-*.pyc
-*.pyo
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache/
+.ipynb_checkpoints/
 
+# --------------------------------------------------
 # Virtual environments
+# --------------------------------------------------
 .venv/
 venv/
 env/
+ENV/
 
-# Environment variables
+# --------------------------------------------------
+# Environment variables and secrets
+# --------------------------------------------------
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+credentials*
+secrets*
 
-# Jupyter
-.ipynb_checkpoints/
+# --------------------------------------------------
+# IDE and editor files
+# --------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# OS / editor cruft
+# --------------------------------------------------
+# Operating-system files
+# --------------------------------------------------
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Large raw datasets (kept locally, not committed)
-data/shopping_queries_dataset_examples.parquet
-data/shopping_queries_dataset_products.parquet
+# --------------------------------------------------
+# Claude Code and AI-agent artifacts
+# --------------------------------------------------
+.claude/
+.claude-*/
+claude-*/
+CLAUDE.local.md
 
-# Keep the processed sample used for development:
-# data/processed/sample_esci_50k.parquet
+# --------------------------------------------------
+# Personal notes and private study material
+# --------------------------------------------------
+docs/
+notes/
+Interview Preparation/
+deployment/DEPLOYMENT_READINESS_REPORT.md
+AWS_Deployment_Guide.txt
+Week*prompt*
+Week * prompt*
+*week*prompt*.txt
+*Week*Prompt*.txt
+
+# --------------------------------------------------
+# Runtime logs
+# --------------------------------------------------
+logs/*
+!logs/.gitkeep
+*.log
+
+# --------------------------------------------------
+# Local datasets
+# --------------------------------------------------
+data/*
+!data/README.md
+
+# --------------------------------------------------
+# Generated evaluation and benchmark outputs
+# --------------------------------------------------
+results/
+benchmark_output/
+evaluation_output/
+
+# --------------------------------------------------
+# Large ML models, indexes, embeddings, and caches
+# --------------------------------------------------
+models/
+*.pt
+*.pth
+*.bin
+*.onnx
+*.ckpt
+*.safetensors
+*.faiss
+*.index
+*.npy
+*.npz
+*.pickle
+*.pkl
+*.joblib
+*.parquet
+
+# --------------------------------------------------
+# Frontend / Node artifacts
+# --------------------------------------------------
+node_modules/
+frontend/node_modules/
+frontend/.streamlit/secrets.toml
+
+# --------------------------------------------------
+# Build and temporary files
+# --------------------------------------------------
+build/
+dist/
+tmp/
+temp/
+*.tmp

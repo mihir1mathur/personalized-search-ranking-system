@@ -1,0 +1,41 @@
+# =============================================================================
+# search-frontend.service  --  Streamlit frontend (pure HTTP client of the API).
+# -----------------------------------------------------------------------------
+# Install:
+#   sudo cp deployment/systemd/search-frontend.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now search-frontend
+#   journalctl -u search-frontend -f
+#
+# Starts AFTER the API so the sidebar health pill is green on first load.
+# The frontend reaches the backend over loopback via SEARCH_API_URL.
+# =============================================================================
+[Unit]
+Description=Personalized Search Ranking Frontend (Streamlit)
+After=network-online.target search-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=searchapp
+Group=searchapp
+WorkingDirectory=/opt/search-ranking
+EnvironmentFile=/etc/search-ranking/search.env
+ExecStart=/opt/search-ranking/.venv/bin/streamlit run frontend/app.py \
+    --server.address 127.0.0.1 \
+    --server.port 8501 \
+    --server.headless true \
+    --server.enableCORS false \
+    --server.enableXsrfProtection true \
+    --browser.gatherUsageStats false
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=false
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,6 +1,19 @@
-pandas
-numpy
-scikit-learn
-rank-bm25
-matplotlib
-pyarrow
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+rank-bm25==0.2.2
+matplotlib==3.9.0
+pyarrow==17.0.0
+sentence-transformers==3.0.1
+faiss-cpu==1.8.0.post1
+lightgbm==4.5.0
+psutil==6.0.0
+
+# Week 6: production FastAPI backend (REST API serving the pipeline)
+fastapi==0.139.0
+uvicorn==0.49.0
+pydantic-settings==2.14.2
+
+# Week 6 testing (unit tests via FastAPI TestClient)
+httpx==0.28.1
+pytest==9.1.1
