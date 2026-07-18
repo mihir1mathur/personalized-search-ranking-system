@@ -7,8 +7,8 @@ streamlit==1.59.1
 requests==2.34.2
 
 # Used by the Benchmark page (charts) and the asset generator (diagrams).
-pandas==2.2.2
-matplotlib==3.9.0
+pandas==2.3.3
+matplotlib==3.10.9
 
 # Frontend smoke tests.
 pytest==9.1.1
