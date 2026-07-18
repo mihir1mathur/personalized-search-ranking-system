@@ -47,18 +47,26 @@ chown "${APP_USER}:${APP_USER}" "${APP_DIR}/logs"
 
 echo "==> 4/7 Python virtualenv + dependencies"
 sudo -u "${APP_USER}" ${PY} -m venv "${APP_DIR}/.venv"
-sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --upgrade pip wheel
+sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --no-cache-dir --upgrade pip wheel
 # NOTE: the pinned dependencies were primarily validated on Python 3.10/3.11.
 # On newer Ubuntu LTS releases the distro python3 may be a newer minor version,
 # so if the install below fails to find a prebuilt wheel, verify dependency
 # compatibility (or provide a 3.10/3.11 interpreter for the venv). On 22.04
 # (Python 3.10) the pinned wheels install cleanly as-is.
-# Backend deps. torch (CPU) is pulled transitively by sentence-transformers;
-# to force the smaller CPU wheel explicitly, uncomment the next line first:
-# sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu
-sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install -r "${APP_DIR}/requirements.txt"
+# CPU-only PyTorch FIRST. The default `torch` wheel on PyPI pulls large CUDA /
+# NVIDIA runtime packages (several GB) that fill the 20 GiB root volume on a
+# GPU-less EC2 box. Installing the CPU build from PyTorch's CPU wheel index up
+# front means torch is already present and satisfies sentence-transformers'
+# `torch>=1.11.0` constraint, so the requirements install below leaves it in
+# place (pip does not replace an already-satisfying package without --upgrade)
+# and never fetches the CUDA build. Re-runs are a no-op ("already satisfied").
+sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --no-cache-dir \
+    torch --index-url https://download.pytorch.org/whl/cpu
+# Backend deps. torch (CPU) is already installed above, so it is NOT re-pulled
+# here and the CUDA/GPU build is never downloaded.
+sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --no-cache-dir -r "${APP_DIR}/requirements.txt"
 # Frontend deps.
-sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install -r "${APP_DIR}/frontend/requirements.txt"
+sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --no-cache-dir -r "${APP_DIR}/frontend/requirements.txt"
 
 echo "==> 5/7 Environment file"
 mkdir -p "${ENV_DIR}"
