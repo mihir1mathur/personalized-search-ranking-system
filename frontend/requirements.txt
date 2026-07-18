@@ -1,6 +1,6 @@
-# Week 7 frontend (Streamlit) dependencies.
+# Streamlit frontend dependencies.
 # Install with:  pip install -r frontend/requirements.txt
-# The frontend is a pure HTTP client of the Week 6 FastAPI backend; it does not
+# The frontend is a pure HTTP client of the FastAPI backend; it does not
 # import any backend Python code.
 
 streamlit==1.59.1

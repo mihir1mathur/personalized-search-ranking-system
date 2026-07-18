@@ -21,19 +21,22 @@ components.configure_page("API Docs · Search Ranking", "📚")
 components.hero("API Documentation",
                 "Interactive, auto-generated docs from the FastAPI backend.")
 
-base = utils.backend_url()
 reachable = utils.backend_reachable()
 st.markdown(components.status_pill(reachable), unsafe_allow_html=True)
-st.caption(f"Backend base URL: `{base}`")
+st.caption("Served same-origin through the Nginx `/api/` proxy — no backend "
+           "port is exposed to the browser.")
 
+# Same-origin, production-safe links: these resolve through the /api/ proxy on
+# whatever host the page is served from. They never point at an internal IP or
+# the backend port directly.
 components.section_title("Documentation endpoints")
 c1, c2, c3 = st.columns(3)
-c1.link_button("🧩 Swagger UI", f"{base}/docs", use_container_width=True)
-c2.link_button("📖 ReDoc", f"{base}/redoc", use_container_width=True)
-c3.link_button("🗂️ OpenAPI JSON", f"{base}/openapi.json", use_container_width=True)
+c1.link_button("🧩 Swagger UI", "/api/docs", use_container_width=True)
+c2.link_button("📖 ReDoc", "/api/redoc", use_container_width=True)
+c3.link_button("🗂️ OpenAPI JSON", "/api/openapi.json", use_container_width=True)
 
-st.caption("Swagger UI lets you try each endpoint in the browser. These links "
-           "open the backend directly; make sure it is running.")
+st.caption("Swagger UI lets you try each endpoint in the browser, proxied "
+           "through the same-origin `/api/` path.")
 
 components.section_title("Endpoints")
 rows = [
@@ -47,6 +50,8 @@ rows = [
 st.table({"Method": [r[0] for r in rows],
           "Path": [r[1] for r in rows],
           "Description": [r[2] for r in rows]})
+st.caption("These are the canonical API paths. In production they are reached "
+           "same-origin under the `/api/` prefix (e.g. `POST /api/ltr-search`).")
 
 # Show the live OpenAPI summary if reachable.
 if reachable:

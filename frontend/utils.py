@@ -7,10 +7,10 @@ This module is the ONLY place the frontend talks to the outside world. It:
   * knows the backend base URL (configurable via the SEARCH_API_URL env var),
   * maps the six user-facing ranking methods onto the correct backend endpoint
     (so the UI never duplicates any search/ranking logic -- it only calls the
-    Week 6 REST API),
+    REST API),
   * turns network / HTTP failures into FRIENDLY messages (never a raw Python
     traceback), via the ApiError exception,
-  * parses the Week 6 benchmark text reports in results/ into plain dicts the
+  * parses the backend benchmark text reports in results/ into plain dicts the
     Benchmark page can chart.
 
 Nothing here imports the backend Python code; the frontend is a pure HTTP
@@ -157,7 +157,7 @@ def fmt_ms(value: float) -> str:
 
 
 # --------------------------------------------------------------------------
-# Week 6 benchmark report parsing (read-only; files live in results/)
+# Benchmark report parsing (read-only; files live in results/)
 # --------------------------------------------------------------------------
 def _read(path: Path) -> Optional[str]:
     try:
@@ -236,7 +236,7 @@ def parse_benchmark_summary() -> Dict[str, Any]:
 
 
 def benchmark_examples_text() -> Optional[str]:
-    """Raw text of the Week 6 request/response examples (for display)."""
+    """Raw text of the request/response examples (for display)."""
     return _read(RESULTS_DIR / "week6_api_examples.txt")
 
 

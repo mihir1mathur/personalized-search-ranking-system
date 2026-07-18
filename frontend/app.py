@@ -3,8 +3,8 @@ app.py  --  Personalized Search Ranking System :: Streamlit frontend (home).
 ============================================================================
 
 This is the SEARCH page (the app's home). It renders a polished search UI and,
-on submit, calls the existing Week 6 FastAPI backend over HTTP -- it never
-reimplements any retrieval or ranking logic.
+on submit, calls the FastAPI backend over HTTP -- it never reimplements any
+retrieval or ranking logic.
 
 Run it with (backend must be running too):
 
@@ -46,22 +46,24 @@ def main() -> None:
 
     components.hero(
         "Personalized Search Ranking System",
-        "Search 48K products through a retrieve → re-rank → learn-to-rank "
-        "pipeline served by a FastAPI backend.",
+        "Search 48K products across a multi-stage retrieval and ranking "
+        "pipeline, served by a FastAPI backend.",
     )
+
+    # ---- Pipeline summary (collapsed, subtle) ---------------------------
+    with st.expander("How results are ranked", expanded=False):
+        st.caption("The full served ranking pipeline. An individual result only "
+                   "traverses the stages its chosen method runs.")
+        components.pipeline_flow()
 
     # ---- Sidebar: backend status ----------------------------------------
     with st.sidebar:
-        st.markdown("### Backend")
         reachable = utils.backend_reachable()
-        st.markdown(components.status_pill(reachable), unsafe_allow_html=True)
-        st.caption(f"URL: `{utils.backend_url()}`")
-        if not reachable:
-            st.caption("Start it with `uvicorn api.main:app`")
-        st.markdown("---")
+        components.sidebar_backend_status(reachable)
+        st.markdown("")
         st.caption("Adjust α/β, candidate depth and defaults on the "
                    "**Settings** page. Explore **Health**, **Benchmark**, "
-                   "**Pipeline** and **API Docs** from the nav above.")
+                   "**Pipeline** and **API Docs** from the navigation.")
 
     # ---- Search controls -------------------------------------------------
     with st.form("search_form", clear_on_submit=False):
@@ -91,16 +93,17 @@ def main() -> None:
     )
 
     # ---- Run the search --------------------------------------------------
-    if submitted:
-        if not query or not query.strip():
-            components.error_box("Please enter a search query.")
-            return
-
+    if submitted and (not query or not query.strip()):
+        # Preserve empty-query validation; only the wording is friendlier.
+        components.error_box("Please enter a search query to begin.")
+    elif submitted:
         st.session_state["searching"] = True
-        progress = st.progress(0, text="Contacting backend…")
+        response = None
         try:
-            progress.progress(30, text=f"Running {method_label} ranking…")
-            with st.spinner(f"Searching with {method_label}…"):
+            # A single, honest status message: the frontend cannot observe the
+            # backend's internal stage boundaries, so it does not fake per-stage
+            # progress. The whole retrieve → re-rank → LTR pipeline runs server-side.
+            with st.spinner("Running the retrieval and ranking pipeline…"):
                 response = utils.search(
                     query=query.strip(),
                     method_label=method_label,
@@ -109,26 +112,30 @@ def main() -> None:
                     beta=float(st.session_state["beta"]),
                     candidate_depth=int(st.session_state["candidate_depth"]),
                 )
-            progress.progress(100, text="Done")
         except utils.ApiError as exc:
-            progress.empty()
             components.error_box(str(exc))
-            return
         finally:
             st.session_state["searching"] = False
-        progress.empty()
 
-        # ---- Results header + cached badge ------------------------------
-        header_cols = st.columns([3, 1])
-        with header_cols[0]:
-            components.section_title(f"Results for “{response.get('query', query)}”")
-        with header_cols[1]:
-            if response.get("cached"):
-                components.cached_badge()
+        if response is not None:
+            # ---- Results header + cached badge --------------------------
+            header_cols = st.columns([3, 1])
+            with header_cols[0]:
+                components.section_title(f"Results for “{response.get('query', query)}”")
+            with header_cols[1]:
+                if response.get("cached"):
+                    components.cached_badge()
 
-        components.performance_row(response, method_label)
-        st.markdown("")
-        components.results_grid(response.get("results", []), method_label)
+            components.performance_row(response, method_label)
+            st.markdown("")
+            components.results_grid(response.get("results", []), method_label)
+    else:
+        # ---- First-load empty state -------------------------------------
+        components.empty_state(
+            "Start your search",
+            "Enter a query above and choose a ranking method to see ranked, "
+            "scored results from the search pipeline.",
+        )
 
     components.footer()
 

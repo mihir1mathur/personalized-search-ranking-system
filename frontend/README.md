@@ -1,7 +1,7 @@
-# Frontend — Streamlit Search App (Week 7)
+# Frontend — Streamlit Search App
 
 A polished, **Python-only** frontend for the Personalized Search Ranking System.
-It is a **pure HTTP client** of the Week 6 FastAPI backend — it does not import
+It is a **pure HTTP client** of the FastAPI backend — it does not import
 any backend code and never reimplements retrieval or ranking. Built with
 Streamlit (no Node.js, npm, React, or TypeScript).
 
@@ -26,7 +26,7 @@ Point at a different backend with `SEARCH_API_URL` (default
 | --- | --- |
 | `app.py` | The **Search** page (home). Query box, Top-K slider, ranking-method dropdown, loading spinner + progress, cached badge, result cards. |
 | `components.py` | Reusable UI building blocks: page config + CSS loader, hero, result cards, status pills, cached badge, friendly error box, performance row, footer. |
-| `utils.py` | The **only** place that talks to the backend: base URL, method→endpoint routing, `search()` / `get_health()` / `get_version()`, friendly `ApiError` handling, and parsers for the Week 6 benchmark reports. |
+| `utils.py` | The **only** place that talks to the backend: base URL, method→endpoint routing, `search()` / `get_health()` / `get_version()`, friendly `ApiError` handling, and parsers for the backend benchmark reports. |
 | `styles.css` | Custom CSS (cards, hero gradient, pills, confidence bars) injected once per page. |
 | `generate_assets.py` | Renders `assets/architecture.png`, `user_flow.png`, and the `screenshot_*.png` UI previews (populated from live backend data when available). |
 | `pages/` | The multipage nav: `1_Health`, `2_API_Docs`, `3_Benchmark`, `4_Pipeline`, `5_Settings`. |
@@ -47,7 +47,7 @@ The six UI methods map onto backend endpoints:
 | LTR | `POST /ltr-search` (`candidate_depth`) |
 
 Health/version/docs use `GET /health`, `GET /version`, and the Swagger/ReDoc/
-OpenAPI links; the Benchmark page reads `results/week6_*` (read-only).
+OpenAPI links; the Benchmark page reads the reports in `results/` (read-only).
 
 ## Tests
 

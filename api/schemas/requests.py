@@ -85,7 +85,7 @@ class HybridSearchRequest(_BaseQueryRequest):
     """
     Request for ``/hybrid-search``. Optional per-request ``alpha`` (BM25 weight)
     and ``beta`` (embedding weight) override the server defaults; when omitted
-    the Week 3/5 best weights are used.
+    the server's configured default weights are used.
     """
 
     alpha: Optional[float] = Field(
@@ -103,8 +103,8 @@ class HybridSearchRequest(_BaseQueryRequest):
 class RerankRequest(_BaseQueryRequest):
     """
     Request for ``/rerank``: hybrid retrieval followed by cross-encoder
-    re-ranking (the Week 4 pipeline). ``candidate_depth`` optionally overrides
-    how many stage-1 candidates the cross-encoder re-scores.
+    re-ranking (the two-stage reranking pipeline). ``candidate_depth`` optionally
+    overrides how many stage-1 candidates the cross-encoder re-scores.
     """
 
     candidate_depth: Optional[int] = Field(
@@ -116,7 +116,7 @@ class RerankRequest(_BaseQueryRequest):
 
 class LTRSearchRequest(_BaseQueryRequest):
     """
-    Request for ``/ltr-search``: the full Week 5 pipeline
+    Request for ``/ltr-search``: the full learning-to-rank pipeline
     (hybrid -> cross-encoder -> Learning-to-Rank), the best-performing method.
     """
 

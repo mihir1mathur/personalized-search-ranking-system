@@ -11,8 +11,8 @@ README:
     screenshot_health.png   a faithful preview of the Health page
 
 The two UI previews are populated with REAL data pulled from the running
-backend when it is reachable; otherwise they fall back to the real response
-captured in Week 6 (the Beats/Sony/Boltune result), so they are never fake.
+backend when it is reachable; otherwise they fall back to a real captured
+response (the Beats/Sony/Boltune result), so they are never fake.
 
 Run with:  python frontend/generate_assets.py
 (Set SEARCH_API_URL if the backend is not on http://127.0.0.1:8000.)
@@ -40,7 +40,7 @@ ASSETS.mkdir(exist_ok=True)
 BLUE, PURPLE, RED, GREEN, GOLD = "#4C72B0", "#8172B3", "#C44E52", "#55A868", "#CCB974"
 INK, MUTED, CARD, BG = "#23232b", "#8a8f9c", "#ffffff", "#f4f5f8"
 
-# Real fallback result (captured live in Week 6) so previews are never fake.
+# Real fallback result (captured live from the backend) so previews are never fake.
 FALLBACK_RESULT = {
     "query": "wireless noise cancelling headphones",
     "ranking_method": "ltr", "top_k": 3, "count": 3,
@@ -100,7 +100,7 @@ def draw_architecture() -> Path:
 
     # Backend column (right).
     _rrect(ax, 6.2, 0.6, 4.4, 5.7, "#eef4ef", ec="#d3e4d8")
-    _text(ax, 8.4, 5.9, "FastAPI Backend (Week 6)", color=GREEN, size=12, weight="bold")
+    _text(ax, 8.4, 5.9, "FastAPI Backend", color=GREEN, size=12, weight="bold")
     stages = [("REST API / routers", GREEN), ("SearchService", RED),
               ("Hybrid Retriever", PURPLE), ("CrossEncoder", PURPLE),
               ("Learning-to-Rank", PURPLE), ("Results (JSON)", GOLD)]
@@ -253,7 +253,7 @@ def draw_health_preview(health: dict, version: dict | None) -> Path:
 
 
 def main() -> None:
-    # Try live data; fall back to the real captured Week 6 responses.
+    # Try live data; fall back to the real captured responses.
     result, health, version = FALLBACK_RESULT, FALLBACK_HEALTH, None
     if utils.backend_reachable():
         try:

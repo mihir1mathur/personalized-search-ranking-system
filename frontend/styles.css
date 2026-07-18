@@ -1,84 +1,172 @@
 /* =========================================================================
    styles.css  --  custom styling for the Personalized Search Ranking UI.
    Injected once per page via components.load_css(). Kept framework-agnostic:
-   result cards are rendered as our own HTML blocks with these classes, so the
-   look is stable across Streamlit versions.
+   result cards, metric cards, and banners are rendered as our own HTML blocks
+   with these classes, so the look is stable across Streamlit versions and does
+   NOT depend on Streamlit's private DOM. A few OPTIONAL, best-effort selectors
+   target Streamlit chrome for polish; every one of them degrades gracefully
+   (if a Streamlit update renames the node, the app still works, it just falls
+   back to the default look).
+
+   Design system (SaaS-style, restrained):
+     radius      12-16px            shadow  0 2px 10px rgba(20,20,40,.05)
+     ink #23232b  muted #6b7180     line #ecedf1
+     brand blue #4C72B0  violet #8172B3  green #2f7a52  amber #8a6d00  red #b0343a
    ========================================================================= */
 
-/* ---- Layout polish ---------------------------------------------------- */
-.block-container {
-    padding-top: 2.2rem;
-    padding-bottom: 3rem;
-    max-width: 1100px;
+:root {
+    --ink: #23232b;
+    --muted: #6b7180;
+    --line: #ecedf1;
+    --brand: #4C72B0;
+    --violet: #8172B3;
+    --radius: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 2px 10px rgba(20, 20, 40, 0.05);
+    --shadow-hover: 0 8px 22px rgba(20, 20, 40, 0.11);
 }
 
-/* ---- Hero / title ----------------------------------------------------- */
+/* ---- Global layout polish -------------------------------------------- */
+.block-container {
+    padding-top: 2.0rem;
+    padding-bottom: 3rem;
+    max-width: 1120px;
+}
+/* Calmer default Streamlit chrome (safe, cosmetic, degrades gracefully). */
+[data-testid="stDecoration"] { display: none; }
+[data-testid="stHeader"] { background: transparent; }
+/* Streamlit's own "Made with Streamlit" footer, when present. */
+footer { visibility: hidden; height: 0; }
+
+/* Consistent, visible focus ring for keyboard users (accessibility). */
+:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+/* ---- Hero / page title (shared by every page) ------------------------ */
 .app-hero {
-    background: linear-gradient(120deg, #4C72B0 0%, #8172B3 55%, #C44E52 100%);
+    background: linear-gradient(118deg, #43619e 0%, #7466a6 100%);
     border-radius: 16px;
-    padding: 26px 30px;
+    padding: 24px 28px;
     color: #fff;
-    margin-bottom: 22px;
-    box-shadow: 0 8px 24px rgba(76, 114, 176, 0.25);
+    margin-bottom: 20px;
+    box-shadow: 0 8px 22px rgba(76, 114, 176, 0.22);
 }
 .app-hero h1 {
     margin: 0;
-    font-size: 1.9rem;
+    font-size: 1.85rem;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: #fff;
+    line-height: 1.2;
 }
 .app-hero p {
-    margin: 6px 0 0 0;
-    font-size: 0.98rem;
-    opacity: 0.92;
+    margin: 7px 0 0 0;
+    font-size: 0.97rem;
+    opacity: 0.93;
+    max-width: 62ch;
 }
 
-/* ---- Section headers -------------------------------------------------- */
+/* ---- Section headers ------------------------------------------------- */
 .section-title {
-    font-size: 1.15rem;
+    font-size: 1.12rem;
     font-weight: 700;
-    margin: 18px 0 6px 0;
+    margin: 20px 0 8px 0;
     color: #2f2f37;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-title::before {
+    content: "";
+    width: 4px;
+    height: 1.02rem;
+    border-radius: 999px;
+    background: linear-gradient(160deg, var(--brand), var(--violet));
+    display: inline-block;
 }
 
-/* ---- Result cards ----------------------------------------------------- */
+/* ---- Metric cards (results summary, health, etc.) -------------------- */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 8px 0 6px 0;
+}
+.metric-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 13px 15px;
+    box-shadow: var(--shadow);
+    min-width: 0;
+}
+.metric-card .m-label {
+    font-size: 0.70rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 5px;
+}
+.metric-card .m-value {
+    font-size: 1.16rem;
+    font-weight: 750;
+    color: var(--ink);
+    line-height: 1.25;
+    overflow-wrap: anywhere;   /* never truncate: wrap "Full learned pipeline" */
+}
+
+/* ---- Result cards ---------------------------------------------------- */
 .result-card {
     display: flex;
     align-items: stretch;
     gap: 16px;
     background: #ffffff;
-    border: 1px solid #ecedf1;
-    border-radius: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     padding: 16px 18px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 10px rgba(20, 20, 40, 0.05);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: var(--shadow);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 .result-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(20, 20, 40, 0.10);
+    box-shadow: var(--shadow-hover);
+    border-color: #dfe3ef;
 }
 .rank-badge {
-    flex: 0 0 46px;
+    flex: 0 0 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.18rem;
     font-weight: 800;
     color: #fff;
-    background: linear-gradient(160deg, #4C72B0, #8172B3);
+    background: #5b6270;          /* consistent, readable style for rank #4 onward */
     border-radius: 12px;
-    min-height: 46px;
+    min-height: 48px;
+    letter-spacing: -0.02em;
 }
-.rank-badge.top { background: linear-gradient(160deg, #C9A227, #CCB974); }
+/* Restrained premium tiers for the top 3 -- tonal brand shades, not metallic
+   gold/silver/bronze. The numeric "#N" is always rendered, so these never
+   convey rank by colour alone. */
+.rank-badge.r1 {
+    background: linear-gradient(160deg, #3f5f9e, #7a5fb0);
+    box-shadow: 0 3px 12px rgba(76, 114, 176, 0.32);
+}
+.rank-badge.r2 { background: linear-gradient(160deg, #5678ad, #8f83bd); }
+.rank-badge.r3 { background: linear-gradient(160deg, #6f86b3, #a096c4); }
 .card-body { flex: 1 1 auto; min-width: 0; }
 .card-title {
-    font-size: 1.02rem;
+    font-size: 1.03rem;
     font-weight: 650;
-    color: #23232b;
-    line-height: 1.35;
-    margin-bottom: 8px;
+    color: var(--ink);
+    line-height: 1.38;
+    margin-bottom: 9px;
+    overflow-wrap: anywhere;   /* long product titles wrap cleanly */
 }
 .card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .pill {
@@ -90,18 +178,49 @@
     color: #444b5a;
     border: 1px solid #e6e8ef;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
+.pill .pill-k { font-weight: 700; opacity: 0.7; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.04em; }
 .pill.method { background: #ece7f6; color: #5a4a8a; border-color: #ddd3f0; }
 .pill.pid    { font-family: ui-monospace, "Cascadia Code", monospace; }
 .pill.conf   { background: #e7f2ec; color: #2f7a52; border-color: #cfe6d9; }
 .pill.score  { background: #eef1f6; color: #3a4a63; }
 
-/* Confidence bar */
+/* Confidence label row (above the bar) */
+.conf-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 2px 0 5px 0;
+}
+.conf-head .conf-lab {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+.conf-head .conf-val { font-size: 0.86rem; font-weight: 750; color: #2f7a52; }
+/* "What is Confidence?" hover helper next to the label. */
+.conf-help {
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #6a5fa4;
+    cursor: help;
+    border-bottom: 1px dotted #b9afd6;
+    margin-left: 6px;
+}
+
+/* Confidence bar (a within-result indicator; tooltip explains the caveat) */
 .conf-bar {
     height: 7px;
     background: #eef0f5;
     border-radius: 999px;
     overflow: hidden;
+    cursor: help;
 }
 .conf-fill {
     height: 100%;
@@ -109,7 +228,96 @@
     border-radius: 999px;
 }
 
-/* ---- Badges / status -------------------------------------------------- */
+/* ---- "Why was this ranked?" explainability (in-card, collapsible) ----- */
+.why-details {
+    margin-top: 12px;
+    border-top: 1px solid #f0f1f5;
+    padding-top: 8px;
+}
+.why-details > summary {
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #4a5568;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+.why-details > summary::-webkit-details-marker { display: none; }
+.why-details > summary::before {
+    content: "▸";
+    color: var(--violet);
+    transition: transform 0.12s ease;
+    display: inline-block;
+}
+.why-details[open] > summary::before { transform: rotate(90deg); }
+.why-details > summary:hover { color: var(--ink); }
+.why-body { margin: 8px 0 2px 2px; }
+.why-list { list-style: none; padding: 0; margin: 0; }
+.why-list li {
+    font-size: 0.86rem;
+    color: #3a4150;
+    line-height: 1.5;
+    padding: 1px 0;
+    overflow-wrap: anywhere;
+}
+.why-scores {
+    margin: 8px 0 4px 0;
+    padding: 8px 10px;
+    background: #f7f8fb;
+    border: 1px solid #eceef4;
+    border-radius: 8px;
+}
+.why-scores .why-sub {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.why-scores .why-score {
+    font-size: 0.82rem;
+    color: #3a4150;
+    font-family: ui-monospace, "Cascadia Code", monospace;
+}
+.why-note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin: 8px 0 0 0;
+    font-style: italic;
+}
+
+/* ---- Pipeline flow visual (overview + Pipeline page) ----------------- */
+.pipeline-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    margin: 6px 0 4px 0;
+}
+.pf-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 340px;
+    background: #fff;
+    border: 1px solid #e2e4ec;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 650;
+    color: #33333c;
+    box-shadow: var(--shadow);
+}
+.pf-step .pf-icon { font-size: 1.15rem; line-height: 1; flex: 0 0 auto; }
+.pf-step .pf-label { font-size: 0.95rem; }
+.pf-arrow { color: var(--violet); font-size: 1.15rem; line-height: 1; margin: 1px 0; }
+
+/* ---- Badges / status pills ------------------------------------------- */
 .cached-badge {
     display: inline-block;
     background: #fff6d6;
@@ -121,14 +329,74 @@
     font-size: 0.85rem;
 }
 .status-pill {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     padding: 4px 12px;
     border-radius: 999px;
     font-weight: 700;
     font-size: 0.85rem;
 }
+.status-pill .dot { width: 8px; height: 8px; border-radius: 999px; background: currentColor; flex: 0 0 8px; }
 .status-ok   { background: #e7f2ec; color: #2f7a52; border: 1px solid #cfe6d9; }
 .status-bad  { background: #fdecec; color: #b0343a; border: 1px solid #f3cccd; }
+
+/* ---- Prominent status banner (Health page) --------------------------- */
+.status-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin: 4px 0 14px 0;
+    border: 1px solid transparent;
+}
+.status-banner .sb-ico { font-size: 1.25rem; line-height: 1; }
+.banner-ok  { background: #e7f2ec; color: #226844; border-color: #cfe6d9; }
+.banner-bad { background: #fdf3e6; color: #8a5a12; border-color: #f2ddba; }
+
+/* ---- Sidebar backend status card ------------------------------------- */
+.sb-status {
+    border: 1px solid #e6e8ef;
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    background: #ffffff;
+    box-shadow: var(--shadow);
+}
+.sb-status .sb-head {
+    font-size: 0.70rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+.sb-status .sb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--ink);
+}
+.sb-status .sb-dot { width: 9px; height: 9px; border-radius: 999px; flex: 0 0 9px; }
+.sb-status .sb-sub { font-size: 0.80rem; color: var(--muted); margin-top: 7px; }
+
+/* ---- Empty state ----------------------------------------------------- */
+.empty-state {
+    text-align: center;
+    border: 1px dashed #d5d9e6;
+    border-radius: var(--radius);
+    padding: 34px 24px;
+    color: var(--muted);
+    background: #fbfbfd;
+    margin-top: 10px;
+}
+.empty-state .es-icon { font-size: 1.9rem; }
+.empty-state .es-title { font-weight: 700; color: #3a3f4b; margin: 8px 0 3px; font-size: 1.05rem; }
+.empty-state .es-sub { font-size: 0.9rem; max-width: 46ch; margin: 0 auto; }
 
 /* ---- Friendly error box ---------------------------------------------- */
 .error-box {
@@ -136,25 +404,93 @@
     border: 1px solid #f3cccd;
     border-left: 5px solid #C44E52;
     color: #8a2c30;
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     padding: 14px 16px;
     font-size: 0.95rem;
     margin: 8px 0;
 }
 
-/* ---- Pipeline flow chips (Pipeline page) ------------------------------ */
+/* ---- Pipeline flow chips (Pipeline page) ----------------------------- */
 .flow-chip {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     background: #fff;
     border: 1px solid #e2e4ec;
     border-radius: 12px;
-    padding: 10px 16px;
+    padding: 11px 16px;
     font-weight: 650;
     color: #33333c;
-    box-shadow: 0 2px 8px rgba(20,20,40,0.05);
+    box-shadow: var(--shadow);
     margin: 4px 0;
+    width: 100%;
+    max-width: 460px;
 }
-.flow-arrow { text-align: center; color: #8172B3; font-size: 1.2rem; margin: 2px 0; }
+.flow-chip .fc-num {
+    flex: 0 0 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(160deg, var(--brand), var(--violet));
+    border-radius: 8px;
+}
+.flow-arrow { color: #8172B3; font-size: 1.1rem; margin: 1px 0 1px 11px; }
 
-/* Footer caption */
-.app-footer { color: #8a8f9c; font-size: 0.82rem; margin-top: 26px; text-align: center; }
+/* ---- Footer ---------------------------------------------------------- */
+.app-footer {
+    color: #9297a4;
+    font-size: 0.82rem;
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px solid #eceef3;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+/* ---- Search form emphasis (query dominant, clear primary button) ----- */
+/* Larger, more prominent query input. Applies to the page's text inputs. */
+.stTextInput input {
+    font-size: 1.04rem;
+    padding: 0.62rem 0.8rem;
+}
+/* The form's submit button (the Search action) reads as the primary CTA. */
+[data-testid="stFormSubmitButton"] button {
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    border: 1px solid #3f5f9e;
+    background: linear-gradient(160deg, #4C72B0, #6a5fa4);
+    color: #fff;
+    transition: filter 0.12s ease, box-shadow 0.12s ease;
+    box-shadow: 0 3px 10px rgba(76, 114, 176, 0.25);
+}
+[data-testid="stFormSubmitButton"] button:hover { filter: brightness(1.05); }
+[data-testid="stFormSubmitButton"] button:disabled { opacity: 0.6; filter: none; box-shadow: none; }
+
+/* ---- Sidebar navigation: relabel the auto-generated main-page item ----
+   Streamlit's file-based multipage nav labels the entry script (app.py) as
+   "app". There is no supported API to rename it without changing the entry
+   point (which would break `streamlit run frontend/app.py` and the systemd
+   unit), so this is a BEST-EFFORT cosmetic relabel to "Search". It only
+   affects the visible text of the first nav link; routing is untouched. If a
+   future Streamlit release changes this DOM, the label simply reverts to the
+   default -- nothing breaks. */
+section[data-testid="stSidebarNav"] ul li:first-child a span { display: none; }
+section[data-testid="stSidebarNav"] ul li:first-child a::after {
+    content: "Search";
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: inherit;
+}
+
+/* ---- Responsive: narrow laptops / stacked controls ------------------- */
+@media (max-width: 640px) {
+    .app-hero { padding: 20px 18px; }
+    .app-hero h1 { font-size: 1.5rem; }
+    .metric-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+    .result-card { flex-direction: column; gap: 12px; }
+    .rank-badge { flex-basis: auto; width: 44px; }
+}

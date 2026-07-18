@@ -1,5 +1,5 @@
 """
-Benchmark page  --  visualize the Week 6 performance reports.
+Benchmark page  --  visualize the backend performance reports.
 ============================================================
 Reads (read-only) the existing results/week6_*.txt reports produced by
 `python -m api.benchmark` and displays latency, memory, CPU, the per-stage
@@ -21,13 +21,13 @@ import utils
 
 components.configure_page("Benchmark · Search Ranking", "📊")
 components.hero("Performance Benchmark",
-                "Latency, memory, and CPU measured on the Week 6 backend "
-                "(read from results/week6_*).")
+                "Latency, memory, and CPU measured on the production backend "
+                "(read from the results/ reports).")
 
 present = utils.report_files_present()
 if not any(present.values()):
     components.error_box(
-        "No Week 6 benchmark reports found in results/. Generate them with: "
+        "No benchmark reports found in results/. Generate them with: "
         "python -m api.benchmark")
     components.footer()
     st.stop()
@@ -40,11 +40,12 @@ summary = utils.parse_benchmark_summary()
 avgs = latency.get("averages", {})
 if avgs:
     components.section_title("Average time per stage")
-    cols = st.columns(4)
-    cols[0].metric("Avg search", utils.fmt_ms(avgs.get("search", 0)))
-    cols[1].metric("Avg rerank", utils.fmt_ms(avgs.get("rerank", 0)))
-    cols[2].metric("Avg LTR", utils.fmt_ms(avgs.get("ltr", 0)))
-    cols[3].metric("Avg cached", utils.fmt_ms(avgs.get("cached", 0)))
+    components.metric_cards([
+        ("Avg search", utils.fmt_ms(avgs.get("search", 0))),
+        ("Avg rerank", utils.fmt_ms(avgs.get("rerank", 0))),
+        ("Avg LTR", utils.fmt_ms(avgs.get("ltr", 0))),
+        ("Avg cached", utils.fmt_ms(avgs.get("cached", 0))),
+    ])
 
 # ---- Latency per method (cold) chart -------------------------------------
 per_method = latency.get("per_method", {})
@@ -73,7 +74,7 @@ if per_method:
 speed = summary.get("cache_speedup_x")
 if speed:
     components.section_title("Cache effectiveness")
-    st.metric("Warm (cached) vs cold LTR", f"~{speed:,}× faster")
+    components.metric_cards([("Warm (cached) vs cold LTR", f"~{speed:,}× faster")])
     st.caption("A repeated popular query is served from the in-memory query "
                "cache in microseconds.")
 
@@ -86,26 +87,29 @@ if memory:
     mem_data = {label: memory[k] for k, label in mem_keys if k in memory}
     if mem_data:
         st.bar_chart(pd.DataFrame({"RSS (MB)": mem_data}))
-    mcols = st.columns(3)
+    mem_tiles = []
     if "load_footprint_mb" in memory:
-        mcols[0].metric("Load footprint", f"{memory['load_footprint_mb']:.0f} MB")
+        mem_tiles.append(("Load footprint", f"{memory['load_footprint_mb']:.0f} MB"))
     if "startup_s" in memory:
-        mcols[1].metric("Startup time", f"{memory['startup_s']:.0f} s")
+        mem_tiles.append(("Startup time", f"{memory['startup_s']:.0f} s"))
     if "corpus" in memory:
-        mcols[2].metric("Corpus", f"{memory['corpus']:,}")
+        mem_tiles.append(("Corpus", f"{memory['corpus']:,}"))
+    if mem_tiles:
+        components.metric_cards(mem_tiles)
 
 # ---- CPU ------------------------------------------------------------------
 if "logical_cpus" in memory or "physical_cpus" in memory:
     components.section_title("CPU")
-    ccols = st.columns(3)
-    ccols[0].metric("Logical CPUs", memory.get("logical_cpus", "-"))
-    ccols[1].metric("Physical CPUs", memory.get("physical_cpus", "-"))
-    ccols[2].metric("Device", "cpu")
+    components.metric_cards([
+        ("Logical CPUs", memory.get("logical_cpus", "-")),
+        ("Physical CPUs", memory.get("physical_cpus", "-")),
+        ("Device", "cpu"),
+    ])
 
 # ---- Raw examples ---------------------------------------------------------
 examples = utils.benchmark_examples_text()
 if examples:
-    with st.expander("Week 6 request/response examples (raw)"):
+    with st.expander("Request/response examples (raw)"):
         st.code(examples, language="text")
 
 components.footer()
