@@ -46,6 +46,15 @@ ENV/
 credentials*
 secrets*
 
+# Deployment env TEMPLATE exception. The `env/` rule (virtualenvs, above) also
+# hides deployment/env/, but the committed production.env.example template MUST
+# be tracked. Re-include the directory, re-ignore ALL of its contents, then allow
+# ONLY the template file -- so a real deployment/env/search.env or *.env stays
+# ignored and is never exposed.
+!deployment/env/
+deployment/env/*
+!deployment/env/production.env.example
+
 # --------------------------------------------------
 # IDE and editor files
 # --------------------------------------------------
