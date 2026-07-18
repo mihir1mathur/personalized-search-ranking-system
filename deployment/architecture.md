@@ -14,7 +14,7 @@ a load balancer) rather than **up** with more workers on one box.
                     └────────┬─────────┘  (8000/8501 NOT exposed)
                              │
         ┌────────────────────────────────────────────────┐
-        │  EC2  t3.medium (2 vCPU / 4 GB) · Ubuntu 22.04  │
+        │  EC2  t3.medium (2 vCPU / 4 GB) · Ubuntu LTS    │
         │  20 GB gp3 root volume                          │
         │                                                 │
         │   ┌──────────────────────────────────────────┐ │
@@ -57,7 +57,7 @@ a load balancer) rather than **up** with more workers on one box.
 | Layer          | Choice                          | Why |
 | -------------- | ------------------------------- | --- |
 | Compute        | EC2 `t3.medium` (2 vCPU, 4 GB)  | Backend RSS ≈ 2.0 GB steady / 2.1 GB peak (measured) + Streamlit + OS. 2 GB instances OOM. |
-| OS             | Ubuntu 22.04 LTS (Jammy)        | Ships Python 3.10; long support; matches the pinned deps. |
+| OS             | Recent Ubuntu LTS (22.04+)      | Supported on recent Ubuntu LTS releases, preferably 22.04 or newer. Uses the distribution-provided `python3` inside a virtual environment. Dependencies were primarily validated on Python 3.10/3.11, so newer Python releases may require compatibility verification. |
 | Storage        | 20 GB gp3                       | OS ~2.5 GB + venv (torch CPU) ~3 GB + artifacts ~0.4 GB + headroom. |
 | Process mgmt   | systemd (2 units)               | Auto-restart, boot-on-start, journald logs, generous start timeout for the 47 s model load. |
 | Reverse proxy  | nginx                           | One public port (80); WebSocket upgrade for Streamlit; TLS-ready; hides 8000/8501. |

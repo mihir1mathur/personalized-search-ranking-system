@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# setup_ec2.sh  --  provision an Ubuntu 22.04 EC2 instance for the search app.
+# setup_ec2.sh  --  provision a recent Ubuntu LTS EC2 instance (22.04+) for the search app.
 # -----------------------------------------------------------------------------
 # Idempotent-ish bootstrap: system packages, service user, Python venv, deps,
 # systemd units, nginx. Run AS ROOT (or with sudo) on the instance AFTER the
@@ -16,7 +16,11 @@ set -euo pipefail
 APP_DIR=/opt/search-ranking
 APP_USER=searchapp
 ENV_DIR=/etc/search-ranking
-PY=python3.10
+# Use the distribution-provided Python 3 interpreter rather than a hardcoded
+# minor version, so this works across recent Ubuntu LTS releases (22.04+). The
+# apt package names below are derived from ${PY}, so this one variable drives
+# everything (venv creation, dev headers, and the interpreter for the app).
+PY=python3
 
 echo "==> 1/7 System packages"
 export DEBIAN_FRONTEND=noninteractive
@@ -44,6 +48,11 @@ chown "${APP_USER}:${APP_USER}" "${APP_DIR}/logs"
 echo "==> 4/7 Python virtualenv + dependencies"
 sudo -u "${APP_USER}" ${PY} -m venv "${APP_DIR}/.venv"
 sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install --upgrade pip wheel
+# NOTE: the pinned dependencies were primarily validated on Python 3.10/3.11.
+# On newer Ubuntu LTS releases the distro python3 may be a newer minor version,
+# so if the install below fails to find a prebuilt wheel, verify dependency
+# compatibility (or provide a 3.10/3.11 interpreter for the venv). On 22.04
+# (Python 3.10) the pinned wheels install cleanly as-is.
 # Backend deps. torch (CPU) is pulled transitively by sentence-transformers;
 # to force the smaller CPU wheel explicitly, uncomment the next line first:
 # sudo -u "${APP_USER}" "${APP_DIR}/.venv/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu

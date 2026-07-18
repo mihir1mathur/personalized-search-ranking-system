@@ -15,6 +15,9 @@ REGION=<REGION e.g. us-east-1>
 KEY_NAME=<EXISTING_KEYPAIR_NAME>            # you already have EC2 keys
 MY_IP=$(curl -s https://checkip.amazonaws.com)/32   # your current IP for SSH
 NAME=search-ranking
+# Ubuntu LTS release to launch. Default is the conservative 22.04 (validated);
+# bump to a newer LTS (e.g. 24.04) if you have verified dependency compatibility.
+UBUNTU_VERSION=22.04
 
 # ---- 1) Security group: SSH (you only) + HTTP (world) -----------------------
 SG_ID=$(aws ec2 create-security-group \
@@ -29,10 +32,14 @@ aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
 # Do NOT open 8000/8501 to the world -- they stay on loopback behind nginx.
 # (Add 443 here later if you put TLS on the box or an ALB in front.)
 
-# ---- 2) Latest Ubuntu 22.04 LTS AMI (Canonical, x86_64) ---------------------
+# ---- 2) Latest Ubuntu ${UBUNTU_VERSION} LTS AMI (Canonical, x86_64) ----------
+# Version-anchored, codename-agnostic filter: the release codename changes every
+# cycle (jammy=22.04, noble=24.04, ...) and the image-path prefix moved from
+# hvm-ssd to hvm-ssd-gp3 in 24.04+, so we match on the ${UBUNTU_VERSION} version
+# string and wildcard both. Architecture stays x86_64 (amd64).
 AMI_ID=$(aws ec2 describe-images --region "$REGION" \
     --owners 099720109477 \
-    --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
+    --filters "Name=name,Values=ubuntu/images/hvm-ssd*/ubuntu-*-${UBUNTU_VERSION}-amd64-server-*" \
               "Name=state,Values=available" \
     --query 'sort_by(Images,&CreationDate)[-1].ImageId' --output text)
 echo "Using AMI: $AMI_ID"
