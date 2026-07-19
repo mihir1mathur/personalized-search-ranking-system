@@ -7,7 +7,14 @@
   <a href="https://lightgbm.readthedocs.io/"><img src="https://img.shields.io/badge/LightGBM-02569B?logo=databricks&logoColor=white" alt="LightGBM"></a>
   <img src="https://img.shields.io/badge/tests-69%20passing-brightgreen" alt="Tests: 69 passing">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
-  <a href="https://aws.amazon.com/"><img src="https://img.shields.io/badge/AWS-Ready-FF9900?logo=amazonaws&logoColor=white" alt="AWS Ready"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Deployment-Production-2ea44f" alt="Production Deployment">
+  <a href="https://aws.amazon.com/ec2/"><img src="https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonec2&logoColor=white" alt="AWS EC2"></a>
+  <a href="https://ubuntu.com/"><img src="https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white" alt="Ubuntu"></a>
+  <a href="https://www.nginx.com/"><img src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white" alt="Nginx"></a>
+  <img src="https://img.shields.io/badge/systemd-managed-30A1E4?logo=linux&logoColor=white" alt="systemd managed">
 </p>
 
 A production-grade search and ranking system built on real e-commerce search
@@ -26,7 +33,7 @@ serves the trained model as a **FastAPI REST API** with a **Streamlit** web app.
 - **Six-page Streamlit** search interface.
 - **69 passing automated tests** across backend and frontend.
 - **CPU-only inference** — no GPU required.
-- **MIT-licensed** and **AWS-ready** architecture.
+- **MIT-licensed**, with a **live AWS EC2 deployment** (Nginx + systemd).
 
 <p align="center">
   <img src="frontend/assets/architecture.png" alt="Architecture" width="720">
@@ -45,7 +52,7 @@ serves the trained model as a **FastAPI REST API** with a **Streamlit** web app.
 - [Installation](#installation)
 - [Running Locally](#running-locally)
 - [Configuration](#configuration)
-- [AWS Deployment](#aws-deployment)
+- [Production Deployment](#production-deployment)
 - [License](#license)
 
 ## Overview
@@ -287,15 +294,86 @@ example `SEARCH_DEFAULT_TOP_K`, `SEARCH_HYBRID_ALPHA`/`SEARCH_HYBRID_BETA`,
 `SEARCH_LOG_LEVEL`, or `SEARCH_API_URL` (which tells the frontend where the
 backend is).
 
-## AWS Deployment
+## Production Deployment
 
-The project is **AWS-ready** and packaged for cloud deployment:
+The system runs as a **live, public web application** on an **Ubuntu EC2**
+instance. **Nginx** is the single public entry point, while the FastAPI backend
+and the Streamlit frontend each run as a **systemd service** — so both start
+automatically on boot and restart on failure. A stable **Elastic IP** keeps the
+public address fixed across instance restarts.
 
-- **Docker** containerization supported for both backend and frontend.
-- Deployable to **AWS App Runner** (simplest path) or **ECS/Fargate** (production
-  scale-up) behind a load balancer with autoscaling.
-- **CloudWatch** for logging and monitoring.
-- Fully configured through **environment variables** — no code changes per env.
+### AWS Architecture
+
+```
+Internet
+    ↓
+Elastic IP
+    ↓
+Nginx
+    ↓
+Streamlit
+    ↓
+FastAPI
+    ↓
+Ranking Pipeline
+```
+
+Nginx listens on port 80 and is the only public surface: it serves the Streamlit
+UI at `/`, proxies the FastAPI backend under `/api/`, and exposes a `/healthz`
+liveness check. The application ports (Streamlit `8501`, FastAPI `8000`) stay
+bound to loopback and are never exposed to the internet.
+
+**Deployed architecture** — the production stack on AWS EC2:
+
+<p align="center">
+  <img src="deployment/aws_deployment_architecture.png" alt="AWS EC2 deployment architecture" width="760">
+</p>
+
+### Deployment Flow
+
+Releases ship directly from GitHub with a `git pull` and a service restart:
+
+```
+GitHub
+   ↓
+git pull
+   ↓
+Ubuntu EC2
+   ↓
+systemd
+   ↓
+FastAPI
+   ↓
+Nginx
+   ↓
+Elastic IP
+   ↓
+Browser
+```
+
+```bash
+cd /opt/search-ranking
+git pull                                       # fetch the latest code from GitHub
+sudo systemctl restart search-api search-frontend
+curl -s http://127.0.0.1:8000/health           # confirm the backend is ready
+```
+
+### Infrastructure
+
+- **Ubuntu Linux** — host operating system on EC2.
+- **EC2** — single instance running the full stack (CPU-only, no GPU).
+- **Elastic IP** — stable public address that survives instance restarts.
+- **Nginx reverse proxy** — one public port; routes `/`, `/api/`, and `/healthz`.
+- **FastAPI** — backend REST API, run as the `search-api` systemd service.
+- **Streamlit** — frontend web app, run as the `search-frontend` systemd service.
+- **systemd services** — process supervision, auto-restart, and start-on-boot.
+- **Environment variables** — all configuration via `SEARCH_` vars, no hardcoded paths.
+- **Health endpoint** — `GET /health`, surfaced publicly through Nginx at `/healthz`.
+
+Once the services are up, the app is reachable at `http://<elastic-ip>/`, with the
+interactive API docs at `http://<elastic-ip>/api/docs`. Provisioning scripts,
+systemd units, and an optional HTTPS / custom-domain setup live in
+[`deployment/`](deployment/).
 
 ## License
 
